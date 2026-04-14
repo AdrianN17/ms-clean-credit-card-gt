@@ -1,0 +1,179 @@
+package com.bank.credit_bank.domain.consumption.model.entities;
+
+import com.bank.credit_bank.domain.base.enums.StatusEnum;
+import com.bank.credit_bank.domain.base.vo.Amount;
+import com.bank.credit_bank.domain.base.vo.Approbation;
+import com.bank.credit_bank.domain.card.model.vo.CardId;
+import com.bank.credit_bank.domain.consumption.events.ConsumptionClosedEvent;
+import com.bank.credit_bank.domain.consumption.events.ConsumptionCreatedEvent;
+import com.bank.credit_bank.domain.consumption.model.exceptions.ConsumptionException;
+import com.bank.credit_bank.domain.consumption.model.vo.SellerName;
+import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.IntStream;
+
+import static com.bank.credit_bank.domain.base.enums.StatusEnum.ACTIVE;
+import static com.bank.credit_bank.domain.consumption.model.Constants.ConsumptionConstant.CONSUMPTION_SPLIT;
+import static com.bank.credit_bank.domain.consumption.model.Constants.ConsumptionErrorMessage.*;
+import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
+import static com.bank.credit_bank.domain.util.Validation.isNotNull;
+import static java.util.Objects.isNull;
+
+public class Consumption extends AggregateRoot<UUID> {
+    private final Amount consumptionAmount;
+    private final Approbation consumptionApprobation;
+    private final CardId cardId;
+    private final SellerName sellerName;
+
+    private Consumption(ConsumptionBuilder builder) {
+        super(builder.id, builder.status, builder.createdDate, builder.updatedDate);
+        this.consumptionAmount = builder.consumptionAmount;
+        this.consumptionApprobation = builder.consumptionApprobation;
+        this.cardId = builder.cardId;
+        this.sellerName = builder.sellerName;
+        addCreatedEvent();
+    }
+
+    public Amount getConsumptionAmount() {
+        return consumptionAmount;
+    }
+
+    public Approbation getConsumptionApprobation() {
+        return consumptionApprobation;
+    }
+
+    public CardId getCardId() {
+        return cardId;
+    }
+
+    public SellerName getSellerName() {
+        return sellerName;
+    }
+
+    public void close() {
+        softDelete();
+        addClosedEvent();
+    }
+
+    private void addCreatedEvent() {
+        addEvent(new ConsumptionCreatedEvent(
+                id,
+                cardId.getValue(),
+                consumptionAmount.getAmount(),
+                consumptionAmount.getCurrency().getCurrency().getValue(),
+                consumptionAmount.getCurrency().getExchangeRate(),
+                sellerName.getValue(),
+                consumptionApprobation.getDate()
+        ));
+    }
+
+    private void addClosedEvent() {
+        addEvent(new ConsumptionClosedEvent(id));
+    }
+
+    public String getSplitSellerName(int count) {
+        return getSellerName().getValue() + CONSUMPTION_SPLIT + " " + count;
+    }
+
+    public List<Consumption> split(Integer quantity,
+                                   BigDecimal tax) {
+
+        isNotNull(quantity, new ConsumptionException(QUANTITY_CANNOT_BE_NULL));
+        isNotNull(tax, new ConsumptionException(TAX_AMOUNT_CANNOT_BE_NULL));
+
+        Amount amount = this.getConsumptionAmount().fraccionar(quantity, tax);
+        return IntStream.rangeClosed(1, quantity).mapToObj(value -> {
+            var newDate = getConsumptionApprobation().getDate().plusMonths(value);
+
+            return Consumption.builder()
+                    .consumptionAmount(amount)
+                    .consumptionApprobation(newDate)
+                    .cardId(getCardId())
+                    .sellerName(getSplitSellerName(value))
+                    .build();
+        }).toList();
+    }
+
+    public void validateIfConsumptionIsInApprobation() {
+        isNotConditional(isNull(getConsumptionApprobation().getApprobationDate()),
+                new ConsumptionException(CONSUMPTION_IS_STILL_IN_APPROBATION));
+    }
+
+    public static ConsumptionBuilder builder() {
+        return new ConsumptionBuilder();
+    }
+
+    public static class ConsumptionBuilder {
+        private UUID id;
+        private StatusEnum status;
+        private LocalDateTime createdDate;
+        private LocalDateTime updatedDate;
+        private Amount consumptionAmount;
+        private Approbation consumptionApprobation;
+        private CardId cardId;
+        private SellerName sellerName;
+
+        public ConsumptionBuilder id(UUID id) {
+            this.id = id;
+            return this;
+        }
+
+        public ConsumptionBuilder status(StatusEnum status) {
+            this.status = status;
+            return this;
+        }
+
+        public ConsumptionBuilder createdDate(LocalDateTime createdDate) {
+            this.createdDate = createdDate;
+            return this;
+        }
+
+        public ConsumptionBuilder updatedDate(LocalDateTime updatedDate) {
+            this.updatedDate = updatedDate;
+            return this;
+        }
+
+        public ConsumptionBuilder consumptionAmount(Amount consumptionAmount) {
+            this.consumptionAmount = consumptionAmount;
+            return this;
+        }
+
+        public ConsumptionBuilder consumptionApprobation(LocalDateTime date, LocalDateTime approbationDate) {
+            this.consumptionApprobation = Approbation.create(date, approbationDate);
+            return this;
+        }
+
+        public ConsumptionBuilder consumptionApprobation(LocalDateTime date) {
+            this.consumptionApprobation = Approbation.create(date);
+            return this;
+        }
+
+        public ConsumptionBuilder cardId(CardId cardId) {
+            this.cardId = cardId;
+            return this;
+        }
+
+        public ConsumptionBuilder sellerName(String sellerName) {
+            this.sellerName = SellerName.create(sellerName);
+            return this;
+        }
+
+        public Consumption build() {
+            if (this.id == null)                    this.id = UUID.randomUUID();
+            if (this.status == null)                this.status = ACTIVE;
+            if (this.createdDate == null)           this.createdDate = LocalDateTime.now();
+            if (this.consumptionApprobation == null) this.consumptionApprobation = Approbation.create(LocalDateTime.now());
+
+            isNotNull(consumptionAmount,      new ConsumptionException(CONSUMPTION_AMOUNT_CANNOT_BE_NULL));
+            isNotNull(cardId,                 new ConsumptionException(CARD_ID_NOT_NULL));
+            isNotNull(sellerName,             new ConsumptionException(SELLER_NAME_CANNOT_BE_NULL));
+            isNotConditional(consumptionAmount.estaVacio(), new ConsumptionException(TAX_AMOUNT_CANNOT_BE_NULL));
+
+            return new Consumption(this);
+        }
+    }
+}
