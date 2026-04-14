@@ -1,0 +1,39 @@
+package com.bank.credit_bank.domain.card.model.vo;
+
+
+import com.bank.credit_bank.domain.base.vo.Amount;
+import com.bank.credit_bank.domain.card.model.exceptions.CreditException;
+
+import java.math.BigDecimal;
+
+import static com.bank.credit_bank.domain.card.model.constants.CreditErrorMessage.*;
+import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
+import static com.bank.credit_bank.domain.util.Validation.isNotNull;
+
+
+public class Credit {
+    private final Amount creditTotal;
+    private final BigDecimal debtTax;
+
+    public Amount getCreditTotal() {
+        return creditTotal;
+    }
+
+    public BigDecimal getDebtTax() {
+        return debtTax;
+    }
+
+    private Credit(Amount creditTotal, BigDecimal debtTax) {
+        this.creditTotal = creditTotal;
+        this.debtTax = debtTax;
+    }
+
+    public static Credit create(Amount creditTotal, BigDecimal debtTax) {
+
+        isNotNull(creditTotal, new CreditException(CREDITICIAL_TOTAL_REQUIRED));
+        isNotNull(debtTax, new CreditException(DEBT_TAX_REQUIRED));
+        isNotConditional(debtTax.compareTo(BigDecimal.ZERO) < 0, new CreditException(DEBT_TAX_NEGATIVE));
+
+        return new Credit(creditTotal, debtTax);
+    }
+}
