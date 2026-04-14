@@ -1,10 +1,9 @@
 package com.bank.credit_bank.application.consumption.port.in;
 
 import com.bank.credit_bank.application.consumption.commands.CardCancelConsumptionCommand;
-
-import java.util.UUID;
+import com.bank.credit_bank.domain.card.model.vo.CardId;
 
 @FunctionalInterface
 public interface CardCancelConsumptionUseCase {
-    UUID cancelConsumption(CardCancelConsumptionCommand cardCancelConsumptionCommand);
+    CardId cancelConsumption(CardCancelConsumptionCommand cardCancelConsumptionCommand);
 }

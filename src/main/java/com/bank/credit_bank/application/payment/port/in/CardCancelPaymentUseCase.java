@@ -1,10 +1,9 @@
 package com.bank.credit_bank.application.payment.port.in;
 
 import com.bank.credit_bank.application.payment.commands.CardCancelPaymentCommand;
-
-import java.util.UUID;
+import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
 @FunctionalInterface
 public interface CardCancelPaymentUseCase {
-    UUID cancelPayment(CardCancelPaymentCommand cardCancelPaymentCommand);
+    PaymentId cancelPayment(CardCancelPaymentCommand cardCancelPaymentCommand);
 }
