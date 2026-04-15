@@ -10,6 +10,7 @@ import com.bank.credit_bank.domain.payment.events.PaymentClosedEvent;
 import com.bank.credit_bank.domain.payment.events.PaymentCreatedEvent;
 import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
 import com.bank.credit_bank.domain.payment.model.exceptions.PaymentException;
+import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 import static java.util.Objects.isNull;
 
-public class Payment extends AggregateRoot<UUID> {
+public class Payment extends AggregateRoot<PaymentId> {
     private final Amount paymentAmount;
     private final Approbation paymentApprobation;
     private final CategoryPaymentEnum category;
@@ -65,7 +66,7 @@ public class Payment extends AggregateRoot<UUID> {
 
     private void addCreatedEvent() {
         addEvent(new PaymentCreatedEvent(
-                id,
+                id.getValue(),
                 cardId.getValue(),
                 paymentAmount.getAmount(),
                 paymentAmount.getCurrency().getCurrency().getValue(),
@@ -77,7 +78,7 @@ public class Payment extends AggregateRoot<UUID> {
     }
 
     private void addClosedEvent() {
-        addEvent(new PaymentClosedEvent(id));
+        addEvent(new PaymentClosedEvent(id.getValue()));
     }
 
     public Payment discount(BigDecimal discount) {
@@ -99,7 +100,7 @@ public class Payment extends AggregateRoot<UUID> {
     }
 
     public static class PaymentBuilder {
-        private UUID id;
+        private PaymentId id;
         private StatusEnum status;
         private LocalDateTime createdDate;
         private LocalDateTime updatedDate;
@@ -110,7 +111,7 @@ public class Payment extends AggregateRoot<UUID> {
         private ChannelPaymentEnum channelPayment;
 
         public PaymentBuilder id(UUID id) {
-            this.id = id;
+            this.id = PaymentId.create(id);
             return this;
         }
 
@@ -160,7 +161,8 @@ public class Payment extends AggregateRoot<UUID> {
         }
 
         public Payment build() {
-            if (this.id == null) this.id = UUID.randomUUID();
+            if (this.id == null)
+                this.id = PaymentId.create(UUID.randomUUID());
             if (this.status == null) this.status = ACTIVE;
             if (this.createdDate == null) this.createdDate = LocalDateTime.now();
             if (this.paymentApprobation == null) this.paymentApprobation = Approbation.create(LocalDateTime.now());

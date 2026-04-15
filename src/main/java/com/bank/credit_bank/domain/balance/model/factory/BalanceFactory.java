@@ -11,6 +11,8 @@ public interface BalanceFactory {
     Balance create(Long balanceId,
                    Long cardId,
                    BigDecimal total,
+                   BigDecimal old,
+                   BigDecimal available,
                    LocalDate startDate,
                    LocalDate endDate,
                    Integer currency,
@@ -22,10 +24,7 @@ public interface BalanceFactory {
     Balance create(Long balanceId,
                    Long cardId,
                    BigDecimal total,
-                   BigDecimal old,
-                   BigDecimal available,
-                   LocalDate startDate,
-                   LocalDate endDate,
+                   Short paymentDay,
                    Integer currency,
                    BigDecimal exchangeRate);
 }

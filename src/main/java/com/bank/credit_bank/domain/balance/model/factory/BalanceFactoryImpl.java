@@ -25,6 +25,8 @@ public class BalanceFactoryImpl implements BalanceFactory {
     public Balance create(Long balanceId,
                           Long cardId,
                           BigDecimal total,
+                          BigDecimal old,
+                          BigDecimal available,
                           LocalDate startDate,
                           LocalDate endDate,
                           Integer currency,
@@ -36,6 +38,8 @@ public class BalanceFactoryImpl implements BalanceFactory {
             isNotNull(balanceId, new BalanceException(ID_CANNOT_BE_NULL));
             isNotNull(cardId, new BalanceException(CARD_ID_CANNOT_BE_NULL));
             isNotNull(total, new BalanceException(TOTAL_AMOUNT_CANNOT_BE_NULL));
+            isNotNull(old, new BalanceException(OLD_AMOUNT_CANNOT_BE_NULL));
+            isNotNull(available, new BalanceException(AVAILABLE_AMOUNT_CANNOT_BE_NULL));
             isNotNull(startDate, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
             isNotNull(endDate, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
             isNotNull(currency, new BalanceException(CURRENCY_CANNOT_BE_NULL));
@@ -43,6 +47,8 @@ public class BalanceFactoryImpl implements BalanceFactory {
 
             var curr = Currency.create(CurrencyEnum.ofValue(currency).orElseThrow(), exchangeRate);
             var totalAmount = Amount.create(curr, total);
+            var totalOld = Amount.create(curr, old);
+            var totalAvailable = Amount.create(curr, available);
 
             return new Balance(
                     BalanceId.create(balanceId),
@@ -51,9 +57,9 @@ public class BalanceFactoryImpl implements BalanceFactory {
                     updatedDate,
                     CardId.create(cardId),
                     totalAmount,
-                    totalAmount,
+                    totalOld,
                     DateRange.create(startDate, endDate),
-                    totalAmount
+                    totalAvailable
             );
         } catch (EntityException e) {
             throw new BalanceException(e.getMessage());
@@ -64,20 +70,14 @@ public class BalanceFactoryImpl implements BalanceFactory {
     public Balance create(Long balanceId,
                           Long cardId,
                           BigDecimal total,
-                          BigDecimal old,
-                          BigDecimal available,
-                          LocalDate startDate,
-                          LocalDate endDate,
+                          Short paymentDay,
                           Integer currency,
                           BigDecimal exchangeRate) {
         try {
             isNotNull(balanceId, new BalanceException(ID_CANNOT_BE_NULL));
             isNotNull(cardId, new BalanceException(CARD_ID_CANNOT_BE_NULL));
             isNotNull(total, new BalanceException(TOTAL_AMOUNT_CANNOT_BE_NULL));
-            isNotNull(old, new BalanceException(OLD_AMOUNT_CANNOT_BE_NULL));
-            isNotNull(available, new BalanceException(AVAILABLE_AMOUNT_CANNOT_BE_NULL));
-            isNotNull(startDate, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
-            isNotNull(endDate, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
+            isNotNull(paymentDay, new BalanceException(PAYMENT_DAY_CANNOT_BE_NULL));
             isNotNull(currency, new BalanceException(CURRENCY_CANNOT_BE_NULL));
             isNotNull(exchangeRate, new BalanceException(EXCHANGE_RATE_CANNOT_BE_NULL));
 
@@ -90,9 +90,9 @@ public class BalanceFactoryImpl implements BalanceFactory {
                     LocalDateTime.now(),
                     CardId.create(cardId),
                     Amount.create(curr, total),
-                    Amount.create(curr, old),
-                    DateRange.create(startDate, endDate),
-                    Amount.create(curr, available)
+                    Amount.create(curr, total),
+                    DateRange.create(paymentDay),
+                    Amount.create(curr, total)
             );
         } catch (EntityException e) {
             throw new BalanceException(e.getMessage());

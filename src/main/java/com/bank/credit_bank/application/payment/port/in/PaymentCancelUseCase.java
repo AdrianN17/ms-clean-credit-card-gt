@@ -4,6 +4,6 @@ import com.bank.credit_bank.application.payment.commands.CardCancelPaymentComman
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
 @FunctionalInterface
-public interface CardCancelPaymentUseCase {
-    PaymentId cancelPayment(CardCancelPaymentCommand cardCancelPaymentCommand);
+public interface PaymentCancelUseCase {
+    PaymentId execute(CardCancelPaymentCommand cardCancelPaymentCommand);
 }

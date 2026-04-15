@@ -6,5 +6,5 @@ import com.bank.credit_bank.domain.card.model.vo.CardId;
 
 @FunctionalInterface
 public interface CardCreateUseCase {
-    CardId createCard(CardCreateCommand cardCreateCommand);
+    CardId execute(CardCreateCommand cardCreateCommand);
 }

@@ -18,4 +18,5 @@ public interface BalanceErrorMessage {
     String BALANCE_ID_MUST_BE_NUMERIC = "Balance ID must be numeric";
 
     String ID_CANNOT_BE_NULL = "ID cannot be null";
+    String PAYMENT_DAY_CANNOT_BE_NULL = "Payment day cannot be null";
 }

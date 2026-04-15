@@ -7,6 +7,7 @@ import com.bank.credit_bank.domain.card.model.vo.CardId;
 import com.bank.credit_bank.domain.consumption.events.ConsumptionClosedEvent;
 import com.bank.credit_bank.domain.consumption.events.ConsumptionCreatedEvent;
 import com.bank.credit_bank.domain.consumption.model.exceptions.ConsumptionException;
+import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 import com.bank.credit_bank.domain.consumption.model.vo.SellerName;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
 
@@ -23,7 +24,7 @@ import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 import static java.util.Objects.isNull;
 
-public class Consumption extends AggregateRoot<UUID> {
+public class Consumption extends AggregateRoot<ConsumptionId> {
     private final Amount consumptionAmount;
     private final Approbation consumptionApprobation;
     private final CardId cardId;
@@ -61,7 +62,7 @@ public class Consumption extends AggregateRoot<UUID> {
 
     private void addCreatedEvent() {
         addEvent(new ConsumptionCreatedEvent(
-                id,
+                id.getValue(),
                 cardId.getValue(),
                 consumptionAmount.getAmount(),
                 consumptionAmount.getCurrency().getCurrency().getValue(),
@@ -72,7 +73,7 @@ public class Consumption extends AggregateRoot<UUID> {
     }
 
     private void addClosedEvent() {
-        addEvent(new ConsumptionClosedEvent(id));
+        addEvent(new ConsumptionClosedEvent(id.getValue()));
     }
 
     public String getSplitSellerName(int count) {
@@ -108,7 +109,7 @@ public class Consumption extends AggregateRoot<UUID> {
     }
 
     public static class ConsumptionBuilder {
-        private UUID id;
+        private ConsumptionId id;
         private StatusEnum status;
         private LocalDateTime createdDate;
         private LocalDateTime updatedDate;
@@ -118,7 +119,7 @@ public class Consumption extends AggregateRoot<UUID> {
         private SellerName sellerName;
 
         public ConsumptionBuilder id(UUID id) {
-            this.id = id;
+            this.id = ConsumptionId.create(id);
             return this;
         }
 
@@ -163,14 +164,16 @@ public class Consumption extends AggregateRoot<UUID> {
         }
 
         public Consumption build() {
-            if (this.id == null)                    this.id = UUID.randomUUID();
-            if (this.status == null)                this.status = ACTIVE;
-            if (this.createdDate == null)           this.createdDate = LocalDateTime.now();
-            if (this.consumptionApprobation == null) this.consumptionApprobation = Approbation.create(LocalDateTime.now());
+            if (this.id == null)
+                this.id = ConsumptionId.create(UUID.randomUUID());
+            if (this.status == null) this.status = ACTIVE;
+            if (this.createdDate == null) this.createdDate = LocalDateTime.now();
+            if (this.consumptionApprobation == null)
+                this.consumptionApprobation = Approbation.create(LocalDateTime.now());
 
-            isNotNull(consumptionAmount,      new ConsumptionException(CONSUMPTION_AMOUNT_CANNOT_BE_NULL));
-            isNotNull(cardId,                 new ConsumptionException(CARD_ID_NOT_NULL));
-            isNotNull(sellerName,             new ConsumptionException(SELLER_NAME_CANNOT_BE_NULL));
+            isNotNull(consumptionAmount, new ConsumptionException(CONSUMPTION_AMOUNT_CANNOT_BE_NULL));
+            isNotNull(cardId, new ConsumptionException(CARD_ID_NOT_NULL));
+            isNotNull(sellerName, new ConsumptionException(SELLER_NAME_CANNOT_BE_NULL));
             isNotConditional(consumptionAmount.estaVacio(), new ConsumptionException(TAX_AMOUNT_CANNOT_BE_NULL));
 
             return new Consumption(this);

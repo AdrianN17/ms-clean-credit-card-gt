@@ -2,8 +2,9 @@ package com.bank.credit_bank.application.card.port.in;
 
 
 import com.bank.credit_bank.application.card.commands.CardCloseCommand;
+import com.bank.credit_bank.domain.card.model.vo.CardId;
 
 @FunctionalInterface
 public interface CardCloseUseCase {
-    Long closeCard(CardCloseCommand cardCloseCommand);
+    CardId execute(CardCloseCommand cardCloseCommand);
 }

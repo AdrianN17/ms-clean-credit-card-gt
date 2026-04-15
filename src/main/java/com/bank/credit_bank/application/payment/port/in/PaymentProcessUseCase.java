@@ -4,6 +4,6 @@ import com.bank.credit_bank.application.payment.commands.CardProcessPaymentComma
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
 @FunctionalInterface
-public interface CardProcessPaymentUseCase {
-    PaymentId processPayment(CardProcessPaymentCommand cardProcessPaymentCommand);
+public interface PaymentProcessUseCase {
+    PaymentId execute(CardProcessPaymentCommand cardProcessPaymentCommand);
 }

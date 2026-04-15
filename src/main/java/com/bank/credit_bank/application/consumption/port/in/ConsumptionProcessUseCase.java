@@ -4,6 +4,6 @@ import com.bank.credit_bank.application.consumption.commands.CardProcessConsumpt
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 @FunctionalInterface
-public interface CardProcessConsumptionUseCase {
-    ConsumptionId processConsumption(CardProcessConsumptionCommand cardProcessConsumptionCommand);
+public interface ConsumptionProcessUseCase {
+    ConsumptionId execute(CardProcessConsumptionCommand cardProcessConsumptionCommand);
 }

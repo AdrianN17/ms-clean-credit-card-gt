@@ -6,6 +6,6 @@ import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 import java.util.List;
 
 @FunctionalInterface
-public interface CardSplitConsumptionUseCase {
-    List<ConsumptionId> splitConsumption(CardSplitConsumptionCommand cardSplitConsumptionCommand);
+public interface ConsumptionSplitUseCase {
+    List<ConsumptionId> execute(CardSplitConsumptionCommand cardSplitConsumptionCommand);
 }
