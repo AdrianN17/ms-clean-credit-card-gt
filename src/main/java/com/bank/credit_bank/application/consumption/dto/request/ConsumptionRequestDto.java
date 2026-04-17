@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record ConsumptionRequestDto (
+public record ConsumptionRequestDto(
         UUID id,
         Integer status,
         LocalDateTime createdDate,
@@ -16,5 +16,5 @@ public record ConsumptionRequestDto (
         LocalDateTime consumptionApprobationDate,
         Long cardId,
         String sellerName
-){
+) {
 }

@@ -17,7 +17,7 @@ import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import static com.bank.credit_bank.application.card.constants.CardApplicationErrorMessage.CARD_CURRENCY_NOT_FOUND;
 import static com.bank.credit_bank.application.generator.constants.GeneratorApplicationErrorMessage.*;
 
-public class CreateCardService implements CardCreateUseCase {
+public class CardCreateService implements CardCreateUseCase {
 
     private final BusinessServiceCard businessServiceCard;
     private final BusinessServiceBalance businessServiceBalance;
@@ -25,7 +25,7 @@ public class CreateCardService implements CardCreateUseCase {
     private final IdGeneratePort idGeneratePort;
     private final LoadCurrencyPort loadCurrencyPort;
 
-    public CreateCardService(BusinessServiceCard businessServiceCard,
+    public CardCreateService(BusinessServiceCard businessServiceCard,
                              BusinessServiceBalance businessServiceBalance,
                              BusinessServiceBenefit businessServiceBenefit,
                              IdGeneratePort idGeneratePort,

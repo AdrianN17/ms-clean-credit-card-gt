@@ -1,8 +1,8 @@
 package com.bank.credit_bank.domain.generic.aggregate;
 
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
-import com.bank.credit_bank.domain.generic.events.DomainEvent;
 import com.bank.credit_bank.domain.generic.domain.GenericDomain;
+import com.bank.credit_bank.domain.generic.events.DomainEvent;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,8 +27,10 @@ public abstract class AggregateRoot<T> extends GenericDomain<T> {
         return events;
     }
 
-    protected Boolean isDeleted(){
-        return  false;
-    };
+    protected Boolean isDeleted() {
+        return false;
+    }
+
+    ;
 
 }

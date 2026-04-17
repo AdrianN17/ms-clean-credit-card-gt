@@ -1,5 +1,6 @@
 package com.bank.credit_bank.domain.benefit.model.entities;
 
+import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.benefit.events.BenefitClosedEvent;
 import com.bank.credit_bank.domain.benefit.events.BenefitCreatedEvent;
@@ -8,7 +9,6 @@ import com.bank.credit_bank.domain.benefit.model.exceptions.BenefitException;
 import com.bank.credit_bank.domain.benefit.model.vo.BenefitId;
 import com.bank.credit_bank.domain.benefit.model.vo.DiscountPolicy;
 import com.bank.credit_bank.domain.benefit.model.vo.Point;
-import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.card.model.enums.CategoryCardEnum;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;

@@ -1,8 +1,10 @@
 package com.bank.credit_bank.domain.consumption.model.entities;
 
+import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Approbation;
+import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.consumption.events.ConsumptionClosedEvent;
 import com.bank.credit_bank.domain.consumption.events.ConsumptionCreatedEvent;
@@ -84,7 +86,7 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
     }
 
     public List<Consumption> splitConsumption(Integer quantity,
-                                   BigDecimal tax) {
+                                              BigDecimal tax) {
 
         isNotConditional(isNull(getConsumptionApprobation().getApprobationDate()),
                 new ConsumptionException(CONSUMPTION_IS_STILL_IN_APPROBATION));
@@ -144,6 +146,26 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
             return this;
         }
 
+        public ConsumptionBuilder consumptionAmount(BigDecimal amount, Integer currency, BigDecimal exchangeRate) {
+            isNotNull(amount, new ConsumptionException(CONSUMPTION_AMOUNT_CANNOT_BE_NULL));
+            isNotNull(currency, new ConsumptionException(CONSUMPTION_AMOUNT_CANNOT_BE_NULL));
+            isNotNull(exchangeRate, new ConsumptionException(CONSUMPTION_AMOUNT_CANNOT_BE_NULL));
+            Currency cur = Currency.create(CurrencyEnum.ofValue(currency).orElseThrow(), exchangeRate);
+            this.consumptionAmount = Amount.create(cur, amount);
+            return this;
+        }
+
+        public ConsumptionBuilder cardId(CardId cardId) {
+            this.cardId = cardId;
+            return this;
+        }
+
+        public ConsumptionBuilder cardId(Long cardId) {
+            isNotNull(cardId, new ConsumptionException(CARD_ID_NOT_NULL));
+            this.cardId = CardId.create(cardId);
+            return this;
+        }
+
         public ConsumptionBuilder consumptionApprobation(LocalDateTime date, LocalDateTime approbationDate) {
             this.consumptionApprobation = Approbation.create(date, approbationDate);
             return this;
@@ -151,11 +173,6 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
 
         public ConsumptionBuilder consumptionApprobation(LocalDateTime date) {
             this.consumptionApprobation = Approbation.create(date);
-            return this;
-        }
-
-        public ConsumptionBuilder cardId(CardId cardId) {
-            this.cardId = cardId;
             return this;
         }
 

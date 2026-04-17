@@ -5,5 +5,6 @@ import com.bank.credit_bank.application.currency.dto.response.CurrencyResponseDt
 
 public interface MapperApplicationCurrency {
     CurrencyResponseDto toDtoResponse(CurrencyRequestDto dto);
+
     CurrencyRequestDto toDtoRequest(CurrencyResponseDto dto);
 }

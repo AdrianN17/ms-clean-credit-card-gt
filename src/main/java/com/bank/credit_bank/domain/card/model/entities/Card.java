@@ -12,9 +12,9 @@ import com.bank.credit_bank.domain.card.model.enums.CategoryCardEnum;
 import com.bank.credit_bank.domain.card.model.enums.TypeCardEnum;
 import com.bank.credit_bank.domain.card.model.exceptions.CardException;
 import com.bank.credit_bank.domain.card.model.vo.cardAccountId.CardAccountId;
+import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.card.model.vo.creditId.Credit;
 import com.bank.credit_bank.domain.card.model.vo.paymentDay.PaymentDay;
-import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
 
 import java.math.BigDecimal;
@@ -22,8 +22,8 @@ import java.time.LocalDateTime;
 
 import static com.bank.credit_bank.domain.base.enums.StatusEnum.ACTIVE;
 import static com.bank.credit_bank.domain.card.model.constants.CardErrorMessage.*;
-import static com.bank.credit_bank.domain.card.model.vo.cardAccountId.CardAccountIdErrorMessage.CARD_ACCOUNTID_CANNOT_BE_NULL;
 import static com.bank.credit_bank.domain.card.model.enums.CardStatusEnum.OPERATIVE;
+import static com.bank.credit_bank.domain.card.model.vo.cardAccountId.CardAccountIdErrorMessage.CARD_ACCOUNTID_CANNOT_BE_NULL;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 
 public class Card extends AggregateRoot<CardId> {

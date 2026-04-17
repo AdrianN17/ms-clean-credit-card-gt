@@ -9,16 +9,12 @@ import com.bank.credit_bank.application.consumption.exceptions.ApplicationConsum
 import com.bank.credit_bank.application.consumption.port.in.ConsumptionProcessUseCase;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
-import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
-import com.bank.credit_bank.domain.base.vo.Amount;
-import com.bank.credit_bank.domain.base.vo.Currency;
-import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import static com.bank.credit_bank.application.consumption.constants.ConsumptionApplicationErrorMessage.CONSUMPTION_CURRENCY_NOT_FOUND;
 
-public class CardConsumptionProcessService implements ConsumptionProcessUseCase {
+public class ConsumptionProcessService implements ConsumptionProcessUseCase {
 
     private final BusinessServiceCard businessServiceCard;
     private final BusinessServiceBalance businessServiceBalance;
@@ -27,7 +23,7 @@ public class CardConsumptionProcessService implements ConsumptionProcessUseCase 
     private final MapperApplicationCurrency mapperApplicationCurrency;
     private final LoadCurrencyPort loadCurrencyPort;
 
-    public CardConsumptionProcessService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceBenefit businessServiceBenefit, BusinessServiceConsumption businessServiceConsumption, MapperApplicationCurrency mapperApplicationCurrency, LoadCurrencyPort loadCurrencyPort) {
+    public ConsumptionProcessService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceBenefit businessServiceBenefit, BusinessServiceConsumption businessServiceConsumption, MapperApplicationCurrency mapperApplicationCurrency, LoadCurrencyPort loadCurrencyPort) {
         this.businessServiceCard = businessServiceCard;
         this.businessServiceBalance = businessServiceBalance;
         this.businessServiceBenefit = businessServiceBenefit;
@@ -49,10 +45,10 @@ public class CardConsumptionProcessService implements ConsumptionProcessUseCase 
         var consumptionCurrency = mapperApplicationCurrency.toDtoRequest(consumptionCurrencyDto);
 
         var consumption = Consumption.builder()
-                .consumptionAmount(Amount.create(
-                        Currency.create(CurrencyEnum.ofValue(consumptionCurrency.currency()).orElseThrow(), consumptionCurrency.exchangeRate()),
-                        cardProcessConsumptionCommand.amount()))
-                .cardId(CardId.create(cardProcessConsumptionCommand.cardId()))
+                .consumptionAmount(cardProcessConsumptionCommand.amount(),
+                        consumptionCurrency.currency(),
+                        consumptionCurrency.exchangeRate())
+                .cardId(cardProcessConsumptionCommand.cardId())
                 .sellerName(cardProcessConsumptionCommand.sellerName())
                 .build();
 

@@ -1,8 +1,10 @@
 package com.bank.credit_bank.domain.payment.model.entities;
 
+import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Approbation;
+import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.card.model.enums.CategoryPaymentEnum;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
@@ -12,6 +14,7 @@ import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
 import com.bank.credit_bank.domain.payment.model.exceptions.PaymentException;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -123,13 +126,12 @@ public class Payment extends AggregateRoot<PaymentId> {
             return this;
         }
 
-        public PaymentBuilder approbation(LocalDateTime date, LocalDateTime approbationDate) {
-            this.paymentApprobation = Approbation.create(date, approbationDate);
-            return this;
-        }
-
-        public PaymentBuilder approbation(LocalDateTime date) {
-            this.paymentApprobation = Approbation.create(date);
+        public PaymentBuilder paymentAmount(BigDecimal amount, Integer currency, BigDecimal exchangeRate) {
+            isNotNull(amount, new PaymentException(PAYMENT_AMOUNT_NOT_NULL));
+            isNotNull(currency, new PaymentException(PAYMENT_CATEGORY_NOT_NULL));
+            isNotNull(exchangeRate, new PaymentException(PAYMENT_CATEGORY_NOT_NULL));
+            Currency cur = Currency.create(CurrencyEnum.ofValue(currency).orElseThrow(), exchangeRate);
+            this.paymentAmount = Amount.create(cur, amount);
             return this;
         }
 
@@ -138,13 +140,41 @@ public class Payment extends AggregateRoot<PaymentId> {
             return this;
         }
 
+        public PaymentBuilder category(Integer category) {
+            this.category = CategoryPaymentEnum.ofValue(category).orElseThrow(
+                    () -> new PaymentException(PAYMENT_CATEGORY_NOT_NULL));
+            return this;
+        }
+
         public PaymentBuilder cardId(CardId cardId) {
             this.cardId = cardId;
             return this;
         }
 
+        public PaymentBuilder cardId(Long cardId) {
+            isNotNull(cardId, new PaymentException(CARD_ID_NOT_NULL));
+            this.cardId = CardId.create(cardId);
+            return this;
+        }
+
         public PaymentBuilder channelPayment(ChannelPaymentEnum channelPayment) {
             this.channelPayment = channelPayment;
+            return this;
+        }
+
+        public PaymentBuilder channelPayment(Integer channelPayment) {
+            this.channelPayment = ChannelPaymentEnum.ofValue(channelPayment).orElseThrow(
+                    () -> new PaymentException(CHANGE_PAYMENT_NOT_NULL));
+            return this;
+        }
+
+        public PaymentBuilder approbation(LocalDateTime date, LocalDateTime approbationDate) {
+            this.paymentApprobation = Approbation.create(date, approbationDate);
+            return this;
+        }
+
+        public PaymentBuilder approbation(LocalDateTime date) {
+            this.paymentApprobation = Approbation.create(date);
             return this;
         }
 

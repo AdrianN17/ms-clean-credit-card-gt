@@ -5,5 +5,6 @@ import com.bank.credit_bank.domain.balance.model.vo.BalanceId;
 
 public interface BusinessServiceBalance {
     Balance get(Long cardId);
+
     BalanceId save(Balance balance);
 }

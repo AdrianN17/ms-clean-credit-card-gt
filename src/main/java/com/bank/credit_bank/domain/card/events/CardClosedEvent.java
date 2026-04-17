@@ -2,8 +2,8 @@ package com.bank.credit_bank.domain.card.events;
 
 import com.bank.credit_bank.domain.generic.events.DomainEvent;
 
-public record CardClosedEvent (
-    Long id
+public record CardClosedEvent(
+        Long id
 ) implements DomainEvent {
     @Override
     public String eventType() {

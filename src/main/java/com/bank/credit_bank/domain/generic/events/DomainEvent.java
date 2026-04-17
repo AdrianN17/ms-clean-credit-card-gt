@@ -4,9 +4,11 @@ public interface DomainEvent {
 
     String eventType();
 
-    default  String systemName(){
-        return  "ms-clean-credit-bank (cb)";
-    };
+    default String systemName() {
+        return "ms-clean-credit-bank (cb)";
+    }
+
+    ;
 
     default String version() {
         return "v1";

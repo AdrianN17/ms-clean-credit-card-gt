@@ -6,5 +6,6 @@ import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 
 public interface MapperApplicationConsumption {
     Consumption toDomain(ConsumptionResponseDto dto);
+
     ConsumptionRequestDto toDto(Consumption consumption);
 }

@@ -5,5 +5,6 @@ import com.bank.credit_bank.domain.benefit.model.vo.BenefitId;
 
 public interface BusinessServiceBenefit {
     Benefit get(Long cardId);
+
     BenefitId save(Benefit benefit);
 }

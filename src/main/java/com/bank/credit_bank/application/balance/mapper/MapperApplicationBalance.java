@@ -6,5 +6,6 @@ import com.bank.credit_bank.domain.balance.model.entities.Balance;
 
 public interface MapperApplicationBalance {
     Balance toDomain(BalanceResponseDto dto);
+
     BalanceRequestDto toDto(Balance balance);
 }

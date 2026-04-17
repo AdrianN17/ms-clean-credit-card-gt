@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface BusinessServiceConsumption {
     Consumption get(Long cardId, UUID consumptionId);
+
     ConsumptionId save(Consumption consumption);
 }

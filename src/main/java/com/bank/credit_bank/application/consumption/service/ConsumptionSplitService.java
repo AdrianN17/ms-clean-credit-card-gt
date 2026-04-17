@@ -10,13 +10,13 @@ import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import java.util.List;
 
-public class SplitConsumptionSplitService implements ConsumptionSplitUseCase {
+public class ConsumptionSplitService implements ConsumptionSplitUseCase {
 
     private final BusinessServiceCard businessServiceCard;
     private final BusinessServiceBalance businessServiceBalance;
     private final BusinessServiceConsumption businessServiceConsumption;
 
-    public SplitConsumptionSplitService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceConsumption businessServiceConsumption) {
+    public ConsumptionSplitService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceConsumption businessServiceConsumption) {
         this.businessServiceCard = businessServiceCard;
         this.businessServiceBalance = businessServiceBalance;
         this.businessServiceConsumption = businessServiceConsumption;
