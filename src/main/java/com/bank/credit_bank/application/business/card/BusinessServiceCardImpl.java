@@ -1,4 +1,4 @@
-package com.bank.credit_bank.application.businesscurrency;
+package com.bank.credit_bank.application.business.card;
 
 import com.bank.credit_bank.application.card.exceptions.ApplicationCardException;
 import com.bank.credit_bank.application.card.mapper.MapperApplicationCard;

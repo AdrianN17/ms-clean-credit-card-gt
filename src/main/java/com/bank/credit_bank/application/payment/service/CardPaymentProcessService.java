@@ -1,25 +1,14 @@
 package com.bank.credit_bank.application.payment.service;
 
-import com.bank.credit_bank.application.balance.exceptions.ApplicationBalanceException;
-import com.bank.credit_bank.application.balance.mapper.MapperApplicationBalance;
-import com.bank.credit_bank.application.balance.port.out.BalanceDBFindByIdPort;
-import com.bank.credit_bank.application.balance.port.out.BalanceDBSavePort;
-import com.bank.credit_bank.application.benefit.exceptions.ApplicationBenefitException;
-import com.bank.credit_bank.application.benefit.mapper.MapperApplicationBenefit;
-import com.bank.credit_bank.application.benefit.port.out.BenefitDBFindByIdPort;
-import com.bank.credit_bank.application.benefit.port.out.BenefitDBSavePort;
-import com.bank.credit_bank.application.card.exceptions.ApplicationCardException;
-import com.bank.credit_bank.application.card.mapper.MapperApplicationCard;
-import com.bank.credit_bank.application.card.port.out.CardDBFindCurrencyPort;
-import com.bank.credit_bank.application.card.port.out.CardFindByIdPort;
+import com.bank.credit_bank.application.business.balance.BusinessServiceBalance;
+import com.bank.credit_bank.application.business.benefit.BusinessServiceBenefit;
+import com.bank.credit_bank.application.business.card.BusinessServiceCard;
+import com.bank.credit_bank.application.business.payment.BusinessServicePayment;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
-import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.application.payment.commands.CardProcessPaymentCommand;
 import com.bank.credit_bank.application.payment.exceptions.ApplicationPaymentException;
-import com.bank.credit_bank.application.payment.mapper.MapperApplicationPayment;
 import com.bank.credit_bank.application.payment.port.in.PaymentProcessUseCase;
-import com.bank.credit_bank.application.payment.port.out.PaymentDBSavePort;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Currency;
@@ -30,80 +19,38 @@ import com.bank.credit_bank.domain.payment.model.entities.Payment;
 import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
-import static com.bank.credit_bank.application.balance.constants.BalanceApplicationErrorMessage.BALANCE_NOT_FOUND;
-import static com.bank.credit_bank.application.balance.constants.BalanceApplicationErrorMessage.FAILED_TO_UPDATE_BALANCE;
-import static com.bank.credit_bank.application.benefit.constants.BenefitApplicationErrorMessage.BENEFIT_NOT_FOUND;
-import static com.bank.credit_bank.application.benefit.constants.BenefitApplicationErrorMessage.FAILED_TO_UPDATE_BENEFIT;
-import static com.bank.credit_bank.application.card.constants.CardApplicationErrorMessage.CARD_CURRENCY_NOT_FOUND;
-import static com.bank.credit_bank.application.card.constants.CardApplicationErrorMessage.CARD_NOT_FOUND;
-import static com.bank.credit_bank.application.payment.constants.PaymentApplicationErrorMessage.FAILED_TO_CREATE_PAYMENT;
 import static com.bank.credit_bank.application.payment.constants.PaymentApplicationErrorMessage.PAYMENT_CURRENCY_NOT_FOUND;
 import static java.util.Objects.isNull;
 
 public class CardPaymentProcessService implements PaymentProcessUseCase {
 
-    private final CardFindByIdPort cardFindByIdPort;
-    private final BalanceDBFindByIdPort balanceDBFindByIdPort;
-    private final BenefitDBFindByIdPort benefitDBFindByIdPort;
-    private final BenefitDBSavePort benefitDBSavePort;
-    private final BalanceDBSavePort balanceDBSavePort;
-    private final PaymentDBSavePort paymentDBSavePort;
-    private final LoadCurrencyPort loadCurrencyPort;
-    private final CardDBFindCurrencyPort cardDBFindCurrencyPort;
+    private final BusinessServiceCard businessServiceCard;
+    private final BusinessServiceBalance businessServiceBalance;
+    private final BusinessServiceBenefit businessServiceBenefit;
+    private final BusinessServicePayment businessServicePayment;
     private final MapperApplicationCurrency mapperApplicationCurrency;
-    private final MapperApplicationPayment mapperApplicationPayment;
-    private final MapperApplicationCard mapperApplicationCard;
-    private final MapperApplicationBalance mapperApplicationBalance;
-    private final MapperApplicationBenefit mapperApplicationBenefit;
-    private final GenericEventPublisherPort genericEventPublisherPort;
+    private final LoadCurrencyPort loadCurrencyPort;
 
-
-    public CardPaymentProcessService(CardFindByIdPort cardFindByIdPort, BalanceDBFindByIdPort balanceDBFindByIdPort, BenefitDBFindByIdPort benefitDBFindByIdPort, BenefitDBSavePort benefitDBSavePort, BalanceDBSavePort balanceDBSavePort, PaymentDBSavePort paymentDBSavePort, LoadCurrencyPort loadCurrencyPort, CardDBFindCurrencyPort cardDBFindCurrencyPort, MapperApplicationCurrency mapperApplicationCurrency, MapperApplicationPayment mapperApplicationPayment, MapperApplicationCard mapperApplicationCard, MapperApplicationBalance mapperApplicationBalance, MapperApplicationBenefit mapperApplicationBenefit, GenericEventPublisherPort genericEventPublisherPort) {
-        this.cardFindByIdPort = cardFindByIdPort;
-        this.balanceDBFindByIdPort = balanceDBFindByIdPort;
-        this.benefitDBFindByIdPort = benefitDBFindByIdPort;
-        this.benefitDBSavePort = benefitDBSavePort;
-        this.balanceDBSavePort = balanceDBSavePort;
-        this.paymentDBSavePort = paymentDBSavePort;
-        this.loadCurrencyPort = loadCurrencyPort;
-        this.cardDBFindCurrencyPort = cardDBFindCurrencyPort;
+    public CardPaymentProcessService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceBenefit businessServiceBenefit, BusinessServicePayment businessServicePayment, MapperApplicationCurrency mapperApplicationCurrency, LoadCurrencyPort loadCurrencyPort) {
+        this.businessServiceCard = businessServiceCard;
+        this.businessServiceBalance = businessServiceBalance;
+        this.businessServiceBenefit = businessServiceBenefit;
+        this.businessServicePayment = businessServicePayment;
         this.mapperApplicationCurrency = mapperApplicationCurrency;
-        this.mapperApplicationPayment = mapperApplicationPayment;
-        this.mapperApplicationCard = mapperApplicationCard;
-        this.mapperApplicationBalance = mapperApplicationBalance;
-        this.mapperApplicationBenefit = mapperApplicationBenefit;
-        this.genericEventPublisherPort = genericEventPublisherPort;
+        this.loadCurrencyPort = loadCurrencyPort;
     }
+
 
     @Override
     public PaymentId execute(CardProcessPaymentCommand cardProcessPaymentCommand) {
 
-        var cardCurrencyValue = cardDBFindCurrencyPort.load(cardProcessPaymentCommand.cardId())
-                .orElseThrow(() -> new ApplicationCardException(CARD_NOT_FOUND));
-
-        var cardCurrencyDto = loadCurrencyPort.load(cardCurrencyValue)
-                .orElseThrow(() -> new ApplicationCardException(CARD_CURRENCY_NOT_FOUND));
+        var card = businessServiceCard.get(cardProcessPaymentCommand.cardId());
+        var balance = businessServiceBalance.get(cardProcessPaymentCommand.cardId());
 
         var paymentCurrencyDto = loadCurrencyPort.load(cardProcessPaymentCommand.currency())
                 .orElseThrow(() -> new ApplicationPaymentException(PAYMENT_CURRENCY_NOT_FOUND));
 
-        var cardCurrency = mapperApplicationCurrency.toDtoRequest(cardCurrencyDto);
         var paymentCurrency = mapperApplicationCurrency.toDtoRequest(paymentCurrencyDto);
-
-        var cardResponseDto = cardFindByIdPort
-                .load(cardProcessPaymentCommand.cardId(), cardCurrency)
-                .orElseThrow(() -> new ApplicationCardException(CARD_NOT_FOUND));
-
-        var balanceResponseDto = balanceDBFindByIdPort
-                .load(cardProcessPaymentCommand.cardId(), paymentCurrency)
-                .orElseThrow(() -> new ApplicationBalanceException(BALANCE_NOT_FOUND));
-
-        var benefitResponseDto = benefitDBFindByIdPort
-                .load(cardProcessPaymentCommand.cardId())
-                .orElseThrow(() -> new ApplicationBenefitException(BENEFIT_NOT_FOUND));
-
-        var card = mapperApplicationCard.toDomain(cardResponseDto);
-        var balance = mapperApplicationBalance.toDomain(balanceResponseDto);
 
         var payment = Payment.builder()
                 .paymentAmount(Amount.create(Currency.create(CurrencyEnum.ofValue(paymentCurrency.currency()).orElseThrow(), paymentCurrency.exchangeRate()), cardProcessPaymentCommand.amount()))
@@ -114,32 +61,22 @@ public class CardPaymentProcessService implements PaymentProcessUseCase {
 
         var paymentAmount = payment.getPaymentAmount();
 
-        if (!isNull(cardProcessPaymentCommand.pointsUsed()))
-        {
-            var benefit = mapperApplicationBenefit.toDomain(benefitResponseDto);
+        if (!isNull(cardProcessPaymentCommand.pointsUsed())) {
+            var benefit = businessServiceBenefit.get(cardProcessPaymentCommand.cardId());
 
             var point = Point.create(cardProcessPaymentCommand.pointsUsed());
             paymentAmount = benefit.discount(paymentAmount, point);
 
-            var benefitRequestDto = mapperApplicationBenefit.toDto(benefit);
-            this.benefitDBSavePort.save(benefitRequestDto).orElseThrow(() -> new ApplicationBenefitException(FAILED_TO_UPDATE_BENEFIT));
-
-            benefit.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+            businessServiceBenefit.save(benefit);
         }
 
         balance.payBalance(paymentAmount, payment.getCategory(), payment.getPaymentApprobation());
         card.updateStatus(balance.isOvercharged());
 
-        var paymentRequestDto = mapperApplicationPayment.toDto(payment);
-        var balanceRequestDto = mapperApplicationBalance.toDto(balance);
+        var id = businessServicePayment.save(payment);
+        businessServiceBalance.save(balance);
+        businessServiceCard.save(card);
 
-        this.paymentDBSavePort.save(paymentRequestDto).orElseThrow(() -> new ApplicationPaymentException(FAILED_TO_CREATE_PAYMENT));
-        this.balanceDBSavePort.save(balanceRequestDto).orElseThrow(() -> new ApplicationBalanceException(FAILED_TO_UPDATE_BALANCE));
-
-        card.pullDomainEvents().forEach(genericEventPublisherPort::publish);
-        balance.pullDomainEvents().forEach(genericEventPublisherPort::publish);
-        payment.pullDomainEvents().forEach(genericEventPublisherPort::publish);
-
-        return payment.getId();
+        return id;
     }
 }

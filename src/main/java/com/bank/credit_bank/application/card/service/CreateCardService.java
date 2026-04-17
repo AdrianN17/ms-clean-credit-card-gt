@@ -1,30 +1,20 @@
 package com.bank.credit_bank.application.card.service;
 
-import com.bank.credit_bank.application.balance.exceptions.ApplicationBalanceException;
-import com.bank.credit_bank.application.balance.mapper.MapperApplicationBalance;
-import com.bank.credit_bank.application.balance.port.out.BalanceDBSavePort;
-import com.bank.credit_bank.application.benefit.exceptions.ApplicationBenefitException;
-import com.bank.credit_bank.application.benefit.mapper.MapperApplicationBenefit;
-import com.bank.credit_bank.application.benefit.port.out.BenefitDBSavePort;
-import com.bank.credit_bank.application.businesscurrency.BusinessServiceBalance;
-import com.bank.credit_bank.application.businesscurrency.BusinessServiceBenefit;
-import com.bank.credit_bank.application.businesscurrency.BusinessServiceCard;
+import com.bank.credit_bank.application.business.balance.BusinessServiceBalance;
+import com.bank.credit_bank.application.business.benefit.BusinessServiceBenefit;
+import com.bank.credit_bank.application.business.card.BusinessServiceCard;
 import com.bank.credit_bank.application.card.commands.CardCreateCommand;
 import com.bank.credit_bank.application.card.exceptions.ApplicationCardException;
-import com.bank.credit_bank.application.card.mapper.MapperApplicationCard;
 import com.bank.credit_bank.application.card.port.in.CardCreateUseCase;
-import com.bank.credit_bank.application.card.port.out.CardDBSavePort;
-import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
 import com.bank.credit_bank.application.generator.exceptions.ApplicationGeneratorException;
-import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.application.generator.port.out.IdGeneratePort;
+import com.bank.credit_bank.domain.balance.model.entities.Balance;
+import com.bank.credit_bank.domain.benefit.model.entities.Benefit;
+import com.bank.credit_bank.domain.card.model.entities.Card;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 
-import static com.bank.credit_bank.application.balance.constants.BalanceApplicationErrorMessage.FAILED_TO_CREATE_BALANCE;
-import static com.bank.credit_bank.application.benefit.constants.BenefitApplicationErrorMessage.FAILED_TO_CREATE_BENEFIT;
 import static com.bank.credit_bank.application.card.constants.CardApplicationErrorMessage.CARD_CURRENCY_NOT_FOUND;
-import static com.bank.credit_bank.application.card.constants.CardApplicationErrorMessage.FAILED_TO_CREATE_CARD;
 import static com.bank.credit_bank.application.generator.constants.GeneratorApplicationErrorMessage.*;
 
 public class CreateCardService implements CardCreateUseCase {
@@ -35,14 +25,17 @@ public class CreateCardService implements CardCreateUseCase {
     private final IdGeneratePort idGeneratePort;
     private final LoadCurrencyPort loadCurrencyPort;
 
-    public CreateCardService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceBenefit businessServiceBenefit, IdGeneratePort idGeneratePort, LoadCurrencyPort loadCurrencyPort) {
+    public CreateCardService(BusinessServiceCard businessServiceCard,
+                             BusinessServiceBalance businessServiceBalance,
+                             BusinessServiceBenefit businessServiceBenefit,
+                             IdGeneratePort idGeneratePort,
+                             LoadCurrencyPort loadCurrencyPort) {
         this.businessServiceCard = businessServiceCard;
         this.businessServiceBalance = businessServiceBalance;
         this.businessServiceBenefit = businessServiceBenefit;
         this.idGeneratePort = idGeneratePort;
         this.loadCurrencyPort = loadCurrencyPort;
     }
-
 
     @Override
     public CardId execute(CardCreateCommand cardCreateCommand) {
@@ -55,34 +48,31 @@ public class CreateCardService implements CardCreateUseCase {
         var currencyResponseDto = loadCurrencyPort.load(cardCreateCommand.currency())
                 .orElseThrow(() -> new ApplicationCardException(CARD_CURRENCY_NOT_FOUND));
 
-        var card = cardFactory.create(
-                idCard,
-                cardCreateCommand.typeCard(),
-                cardCreateCommand.categoryCard(),
-                idCardAccount,
-                cardCreateCommand.paymentDay(),
-                cardCreateCommand.creditTotal(),
-                cardCreateCommand.debtTax(),
-                currencyResponseDto.currency(),
-                currencyResponseDto.exchangeRate()
-        );
+        var card = Card.builder()
+                .cardId(idCard)
+                .typeCard(cardCreateCommand.typeCard())
+                .categoryCard(cardCreateCommand.categoryCard())
+                .cardAccountId(idCardAccount)
+                .paymentDay(cardCreateCommand.paymentDay())
+                .credit(cardCreateCommand.creditTotal(),
+                        cardCreateCommand.debtTax(),
+                        currencyResponseDto.currency(),
+                        currencyResponseDto.exchangeRate())
+                .build();
 
-        var balance = balanceFactory.create(
-                idBalance,
-                idCard,
-                cardCreateCommand.creditTotal(),
-                cardCreateCommand.paymentDay(),
-                currencyResponseDto.currency(),
-                currencyResponseDto.exchangeRate()
-        );
+        var balance = Balance.builder()
+                .balanceId(idBalance)
+                .cardId(idCard)
+                .total(cardCreateCommand.creditTotal())
+                .dateRange(cardCreateCommand.paymentDay())
+                .currency(currencyResponseDto.currency(), currencyResponseDto.exchangeRate())
+                .build();
 
-        var benefit = benefitFactory.create(
-                idBenefit,
-                idCard,
-                cardCreateCommand.hasDiscount(),
-                cardCreateCommand.multiplierPoints()
-        );
-
+        var benefit = Benefit.builder()
+                .benefitId(idBenefit)
+                .cardId(idCard)
+                .discountPolicy(cardCreateCommand.hasDiscount(), cardCreateCommand.multiplierPoints())
+                .build();
 
         var id = businessServiceCard.save(card);
         businessServiceBalance.save(balance);

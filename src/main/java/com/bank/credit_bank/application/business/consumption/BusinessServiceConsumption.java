@@ -1,4 +1,4 @@
-package com.bank.credit_bank.application.businesscurrency;
+package com.bank.credit_bank.application.business.consumption;
 
 import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;

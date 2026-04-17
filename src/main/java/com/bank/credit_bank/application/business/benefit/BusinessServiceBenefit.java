@@ -1,4 +1,4 @@
-package com.bank.credit_bank.application.businesscurrency;
+package com.bank.credit_bank.application.business.benefit;
 
 import com.bank.credit_bank.domain.benefit.model.entities.Benefit;
 import com.bank.credit_bank.domain.benefit.model.vo.BenefitId;

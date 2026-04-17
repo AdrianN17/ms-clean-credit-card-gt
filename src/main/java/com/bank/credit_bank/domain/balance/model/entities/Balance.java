@@ -228,6 +228,12 @@ public class Balance extends AggregateRoot<BalanceId> {
             return this;
         }
 
+        public BalanceBuilder dateRange(Short paymentDay) {
+            isNotNull(paymentDay, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
+            this.dateRange = DateRange.create(paymentDay);
+            return this;
+        }
+
         public BalanceBuilder dateRange(LocalDate startDate, LocalDate endDate) {
             isNotNull(startDate, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
             isNotNull(endDate, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
