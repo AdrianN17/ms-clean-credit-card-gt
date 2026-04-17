@@ -9,4 +9,7 @@ public interface PaymentErrorMessage {
     String CARD_ID_NOT_NULL = "El identificador de la tarjeta del pay no puede ser nulo";
     String PAYMENT_IS_STILL_IN_APPROBATION = "The payment is still in approbation.";
     String CHANGE_PAYMENT_NOT_NULL = "The change payment cannot be null.";
+
+    String POINTS_CANNOT_USED_WITH_PREPAY = "Points cannot be used with prepay";
+
 }

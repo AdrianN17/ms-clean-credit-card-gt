@@ -10,6 +10,7 @@ import com.bank.credit_bank.application.card.port.out.CardDBFindCurrencyPort;
 import com.bank.credit_bank.application.card.port.out.CardFindByIdPort;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
+import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.application.payment.commands.CardCancelPaymentCommand;
 import com.bank.credit_bank.application.payment.exceptions.ApplicationPaymentException;
 import com.bank.credit_bank.application.payment.mapper.MapperApplicationPayment;
@@ -39,6 +40,7 @@ public class PaymentCancelService implements PaymentCancelUseCase {
     private final MapperApplicationPayment mapperApplicationPayment;
     private final MapperApplicationCard mapperApplicationCard;
     private final MapperApplicationBalance mapperApplicationBalance;
+    private final GenericEventPublisherPort genericEventPublisherPort;
 
     public PaymentCancelService(CardFindByIdPort cardFindByIdPort,
                                 BalanceDBFindByIdPort balanceDBFindByIdPort,
@@ -47,7 +49,7 @@ public class PaymentCancelService implements PaymentCancelUseCase {
                                 PaymentDBSavePort paymentDBSavePort,
                                 LoadCurrencyPort loadCurrencyPort,
                                 CardDBFindCurrencyPort cardDBFindCurrencyPort,
-                                PaymentDBFindCurrencyPort loadConsumptionCurrencyPort, MapperApplicationCurrency mapperApplicationCurrency, MapperApplicationPayment mapperApplicationPayment, MapperApplicationCard mapperApplicationCard, MapperApplicationBalance mapperApplicationBalance) {
+                                PaymentDBFindCurrencyPort loadConsumptionCurrencyPort, MapperApplicationCurrency mapperApplicationCurrency, MapperApplicationPayment mapperApplicationPayment, MapperApplicationCard mapperApplicationCard, MapperApplicationBalance mapperApplicationBalance, GenericEventPublisherPort genericEventPublisherPort) {
         this.cardFindByIdPort = cardFindByIdPort;
         this.balanceDBFindByIdPort = balanceDBFindByIdPort;
         this.paymentFindByIdPort = paymentFindByIdPort;
@@ -60,8 +62,8 @@ public class PaymentCancelService implements PaymentCancelUseCase {
         this.mapperApplicationPayment = mapperApplicationPayment;
         this.mapperApplicationCard = mapperApplicationCard;
         this.mapperApplicationBalance = mapperApplicationBalance;
+        this.genericEventPublisherPort = genericEventPublisherPort;
     }
-
 
     @Override
     public PaymentId execute(CardCancelPaymentCommand cardCancelPaymentCommand) {
@@ -98,13 +100,19 @@ public class PaymentCancelService implements PaymentCancelUseCase {
         var card = mapperApplicationCard.toDomain(cardResponseDto);
         var balance = mapperApplicationBalance.toDomain(balanceResponseDto);
 
-        card.cancelPayment(balance, payment);
+        balance.cancelPayment(payment.getPaymentAmount());
+        card.updateStatus(balance.isOvercharged());
+        payment.close();
 
         var paymentRequestDto = mapperApplicationPayment.toDto(payment);
         var balanceRequestDto = mapperApplicationBalance.toDto(balance);
 
         this.paymentDBSavePort.save(paymentRequestDto).orElseThrow(() -> new ApplicationPaymentException(FAILED_TO_UPDATE_PAYMENT));
         this.balanceDBSavePort.save(balanceRequestDto).orElseThrow(() -> new ApplicationBalanceException(FAILED_TO_UPDATE_BALANCE));
+
+        card.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        balance.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        payment.pullDomainEvents().forEach(genericEventPublisherPort::publish);
 
         return payment.getId();
     }

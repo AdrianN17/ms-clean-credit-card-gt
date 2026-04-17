@@ -1,8 +1,8 @@
-package com.bank.credit_bank.domain.card.model.vo;
+package com.bank.credit_bank.domain.card.model.vo.cardAccountId;
 
-import com.bank.credit_bank.domain.card.model.exceptions.CardIdException;
+import com.bank.credit_bank.domain.card.model.vo.cardId.CardIdException;
 
-import static com.bank.credit_bank.domain.card.model.constants.CardIdErrorMessage.CARD_ID_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.card.model.vo.cardId.CardIdErrorMessage.CARD_ID_CANNOT_BE_NULL;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 
 public class CardAccountId {

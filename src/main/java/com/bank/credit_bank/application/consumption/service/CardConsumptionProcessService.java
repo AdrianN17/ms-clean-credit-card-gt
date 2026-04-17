@@ -19,10 +19,11 @@ import com.bank.credit_bank.application.consumption.port.in.ConsumptionProcessUs
 import com.bank.credit_bank.application.consumption.port.out.ConsumptionDBSavePort;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
+import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Currency;
-import com.bank.credit_bank.domain.card.model.vo.CardId;
+import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
@@ -37,80 +38,32 @@ import static com.bank.credit_bank.application.consumption.constants.Consumption
 
 public class CardConsumptionProcessService implements ConsumptionProcessUseCase {
 
-    private final CardFindByIdPort cardFindByIdPort;
-    private final BalanceDBFindByIdPort balanceDBFindByIdPort;
-    private final BenefitDBFindByIdPort benefitDBFindByIdPort;
+
     private final BenefitDBSavePort benefitDBSavePort;
     private final BalanceDBSavePort balanceDBSavePort;
     private final ConsumptionDBSavePort consumptionDBSavePort;
-    private final LoadCurrencyPort loadCurrencyPort;
-    private final CardDBFindCurrencyPort cardDBFindCurrencyPort;
-    private final MapperApplicationCurrency mapperApplicationCurrency;
     private final MapperApplicationConsumption mapperApplicationConsumption;
-    private final MapperApplicationCard mapperApplicationCard;
-    private final MapperApplicationBalance mapperApplicationBalance;
-    private final MapperApplicationBenefit mapperApplicationBenefit;
+    private final GenericEventPublisherPort genericEventPublisherPort;
 
-    public CardConsumptionProcessService(CardFindByIdPort cardFindByIdPort,
-                                         BalanceDBFindByIdPort balanceDBFindByIdPort,
-                                         BenefitDBFindByIdPort benefitDBFindByIdPort,
-                                         BenefitDBSavePort benefitDBSavePort,
-                                         BalanceDBSavePort balanceDBSavePort,
-                                         ConsumptionDBSavePort consumptionDBSavePort,
-                                         LoadCurrencyPort loadCurrencyPort,
-                                         CardDBFindCurrencyPort cardDBFindCurrencyPort,
-                                         MapperApplicationCurrency mapperApplicationCurrency,
-                                         MapperApplicationConsumption mapperApplicationConsumption,
-                                         MapperApplicationCard mapperApplicationCard,
-                                         MapperApplicationBalance mapperApplicationBalance,
-                                         MapperApplicationBenefit mapperApplicationBenefit) {
-        this.cardFindByIdPort = cardFindByIdPort;
-        this.balanceDBFindByIdPort = balanceDBFindByIdPort;
-        this.benefitDBFindByIdPort = benefitDBFindByIdPort;
-        this.benefitDBSavePort = benefitDBSavePort;
-        this.balanceDBSavePort = balanceDBSavePort;
-        this.consumptionDBSavePort = consumptionDBSavePort;
-        this.loadCurrencyPort = loadCurrencyPort;
-        this.cardDBFindCurrencyPort = cardDBFindCurrencyPort;
-        this.mapperApplicationCurrency = mapperApplicationCurrency;
-        this.mapperApplicationConsumption = mapperApplicationConsumption;
-        this.mapperApplicationCard = mapperApplicationCard;
-        this.mapperApplicationBalance = mapperApplicationBalance;
-        this.mapperApplicationBenefit = mapperApplicationBenefit;
-    }
 
     @Override
     public ConsumptionId execute(CardProcessConsumptionCommand cardProcessConsumptionCommand) {
 
-        var cardCurrencyValue = cardDBFindCurrencyPort.load(cardProcessConsumptionCommand.cardId())
-                .orElseThrow(() -> new ApplicationCardException(CARD_NOT_FOUND));
 
-        var cardCurrencyDto = loadCurrencyPort.load(cardCurrencyValue)
-                .orElseThrow(() -> new ApplicationCardException(CARD_CURRENCY_NOT_FOUND));
+
+
 
         var consumptionCurrencyDto = loadCurrencyPort.load(cardProcessConsumptionCommand.currency())
                 .orElseThrow(() -> new ApplicationConsumptionException(CONSUMPTION_CURRENCY_NOT_FOUND));
 
-        var cardCurrency = mapperApplicationCurrency.toDtoRequest(cardCurrencyDto);
+
         var consumptionCurrency = mapperApplicationCurrency.toDtoRequest(consumptionCurrencyDto);
 
-        var cardResponseDto = cardFindByIdPort
-                .load(cardProcessConsumptionCommand.cardId(), cardCurrency)
-                .orElseThrow(() -> new ApplicationCardException(CARD_NOT_FOUND));
 
-        var balanceResponseDto = balanceDBFindByIdPort
-                .load(cardProcessConsumptionCommand.cardId(), cardCurrency)
-                .orElseThrow(() -> new ApplicationBalanceException(BALANCE_NOT_FOUND));
 
-        var benefitResponseDto = benefitDBFindByIdPort
-                .load(cardProcessConsumptionCommand.cardId())
-                .orElseThrow(() -> new ApplicationBenefitException(BENEFIT_NOT_FOUND));
 
-        var card = mapperApplicationCard.toDomain(cardResponseDto);
-        var balance = mapperApplicationBalance.toDomain(balanceResponseDto);
-        var benefit = mapperApplicationBenefit.toDomain(benefitResponseDto);
 
-        Consumption consumption = Consumption.builder()
+        var consumption = Consumption.builder()
                 .consumptionAmount(Amount.create(
                         Currency.create(CurrencyEnum.ofValue(consumptionCurrency.currency()).orElseThrow(), consumptionCurrency.exchangeRate()),
                         cardProcessConsumptionCommand.amount()))
@@ -118,15 +71,20 @@ public class CardConsumptionProcessService implements ConsumptionProcessUseCase 
                 .sellerName(cardProcessConsumptionCommand.sellerName())
                 .build();
 
-        card.consumption(balance, benefit, consumption);
+        benefit.accumulate(consumption.getConsumptionAmount(), card.getCategoryCard());
+        balance.consumeBalance(consumption.getConsumptionAmount(), card.getCardStatus());
+        card.updateStatus(balance.isOvercharged());
 
-        var consumptionRequestDto = mapperApplicationConsumption.toDto(consumption);
         var balanceRequestDto = mapperApplicationBalance.toDto(balance);
         var benefitRequestDto = mapperApplicationBenefit.toDto(benefit);
 
-        this.consumptionDBSavePort.save(consumptionRequestDto).orElseThrow(() -> new ApplicationConsumptionException(FAILED_TO_CREATE_CONSUMPTION));
         this.balanceDBSavePort.save(balanceRequestDto).orElseThrow(() -> new ApplicationBalanceException(FAILED_TO_UPDATE_BALANCE));
         this.benefitDBSavePort.save(benefitRequestDto).orElseThrow(() -> new ApplicationBenefitException(FAILED_TO_UPDATE_BENEFIT));
+
+        card.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        balance.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        benefit.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+
 
         return consumption.getId();
     }

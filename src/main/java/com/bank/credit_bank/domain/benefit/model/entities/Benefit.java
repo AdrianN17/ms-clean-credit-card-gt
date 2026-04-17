@@ -10,14 +10,14 @@ import com.bank.credit_bank.domain.benefit.model.vo.DiscountPolicy;
 import com.bank.credit_bank.domain.benefit.model.vo.Point;
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.card.model.enums.CategoryCardEnum;
-import com.bank.credit_bank.domain.card.model.vo.CardId;
+import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
-import com.bank.credit_bank.domain.payment.model.entities.Payment;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
+import static com.bank.credit_bank.domain.base.enums.StatusEnum.ACTIVE;
 import static com.bank.credit_bank.domain.benefit.model.constants.BenefitConstant.*;
 import static com.bank.credit_bank.domain.benefit.model.constants.BenefitErrorMessage.*;
 import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
@@ -28,17 +28,11 @@ public class Benefit extends AggregateRoot<BenefitId> {
     private final DiscountPolicy discountPolicy;
     private final CardId cardId;
 
-    public Benefit(BenefitId id,
-                   StatusEnum status,
-                   LocalDateTime createdDate,
-                   LocalDateTime updatedDate,
-                   Point totalPoints,
-                   DiscountPolicy discountPolicy,
-                   CardId cardId) {
-        super(id, status, createdDate, updatedDate);
-        this.totalPoints = totalPoints;
-        this.discountPolicy = discountPolicy;
-        this.cardId = cardId;
+    private Benefit(BenefitBuilder builder) {
+        super(builder.id, builder.status, builder.createdDate, builder.updatedDate);
+        this.totalPoints = builder.totalPoints;
+        this.discountPolicy = builder.discountPolicy;
+        this.cardId = builder.cardId;
         addCreatedEvent();
     }
 
@@ -59,8 +53,7 @@ public class Benefit extends AggregateRoot<BenefitId> {
         addClosedEvent();
     }
 
-    public void accumulate(Amount amount,
-                           CategoryCardEnum categoryCard) {
+    public void accumulate(Amount amount, CategoryCardEnum categoryCard) {
 
         isNotNull(amount, new BenefitException(AMOUNT_NOT_NULL));
         isNotNull(categoryCard, new BenefitException(CATEGORY_NOT_NULL));
@@ -83,9 +76,8 @@ public class Benefit extends AggregateRoot<BenefitId> {
         addUpdatedEvent();
     }
 
-    public Payment discount(Payment payment,
-                            Point puntosUsar) {
-        isNotNull(payment, new BenefitException(PAYMENT_NOT_NULL));
+    public Amount discount(Amount amount, Point puntosUsar) {
+        isNotNull(amount, new BenefitException(PAYMENT_NOT_NULL));
         isNotNull(puntosUsar, new BenefitException(POINT_NOT_NULL));
 
         isNotConditional(getTotalPoints()
@@ -101,7 +93,7 @@ public class Benefit extends AggregateRoot<BenefitId> {
 
         addUpdatedEvent();
 
-        return payment.discount(discount);
+        return amount.descuento(discount);
     }
 
     private void addCreatedEvent() {
@@ -128,5 +120,67 @@ public class Benefit extends AggregateRoot<BenefitId> {
         addEvent(new BenefitClosedEvent(
                 id.getValue()
         ));
+    }
+
+    public static BenefitBuilder builder() {
+        return new BenefitBuilder();
+    }
+
+    public static class BenefitBuilder {
+        private BenefitId id;
+        private StatusEnum status;
+        private LocalDateTime createdDate;
+        private LocalDateTime updatedDate;
+        private Point totalPoints;
+        private DiscountPolicy discountPolicy;
+        private CardId cardId;
+
+        public BenefitBuilder benefitId(Long benefitId) {
+            this.id = BenefitId.create(benefitId);
+            return this;
+        }
+
+        public BenefitBuilder cardId(Long cardId) {
+            this.cardId = CardId.create(cardId);
+            return this;
+        }
+
+        public BenefitBuilder totalPoints(Integer totalPoints) {
+            this.totalPoints = Point.create(totalPoints != null ? totalPoints : 0);
+            return this;
+        }
+
+        public BenefitBuilder discountPolicy(Boolean hasDiscount, BigDecimal multiplierPoints) {
+            isNotNull(hasDiscount, new BenefitException(DISCUOUNT_POLICY_NOT_NULL));
+            this.discountPolicy = DiscountPolicy.create(hasDiscount, multiplierPoints);
+            return this;
+        }
+
+        public BenefitBuilder status(Integer status) {
+            this.status = StatusEnum.ofValue(status).orElseThrow();
+            return this;
+        }
+
+        public BenefitBuilder createdDate(LocalDateTime createdDate) {
+            this.createdDate = createdDate;
+            return this;
+        }
+
+        public BenefitBuilder updatedDate(LocalDateTime updatedDate) {
+            this.updatedDate = updatedDate;
+            return this;
+        }
+
+        public Benefit build() {
+            isNotNull(id, new BenefitException(ID_CANNOT_BE_NULL));
+            isNotNull(cardId, new BenefitException(CARD_ID_NOT_NULL));
+            isNotNull(discountPolicy, new BenefitException(DISCUOUNT_POLICY_NOT_NULL));
+
+            if (this.totalPoints == null) this.totalPoints = Point.create();
+            if (this.status == null) this.status = ACTIVE;
+            if (this.createdDate == null) this.createdDate = LocalDateTime.now();
+
+            return new Benefit(this);
+        }
     }
 }

@@ -13,10 +13,12 @@ import com.bank.credit_bank.application.consumption.exceptions.ApplicationConsum
 import com.bank.credit_bank.application.consumption.mapper.MapperApplicationConsumption;
 import com.bank.credit_bank.application.consumption.port.in.ConsumptionSplitUseCase;
 import com.bank.credit_bank.application.consumption.port.out.ConsumptionDBFindCurrencyPort;
-import com.bank.credit_bank.application.consumption.port.out.ConsumptionFindByIdPort;
 import com.bank.credit_bank.application.consumption.port.out.ConsumptionDBSavePort;
+import com.bank.credit_bank.application.consumption.port.out.ConsumptionFindByIdPort;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
+import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
+import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import java.util.List;
@@ -41,6 +43,7 @@ public class SplitConsumptionSplitService implements ConsumptionSplitUseCase {
     private final MapperApplicationConsumption mapperApplicationConsumption;
     private final MapperApplicationCard mapperApplicationCard;
     private final MapperApplicationBalance mapperApplicationBalance;
+    private final GenericEventPublisherPort genericEventPublisherPort;
 
     public SplitConsumptionSplitService(CardFindByIdPort cardFindByIdPort,
                                         BalanceDBFindByIdPort balanceDBFindByIdPort,
@@ -53,7 +56,7 @@ public class SplitConsumptionSplitService implements ConsumptionSplitUseCase {
                                         MapperApplicationCurrency mapperApplicationCurrency,
                                         MapperApplicationConsumption mapperApplicationConsumption,
                                         MapperApplicationCard mapperApplicationCard,
-                                        MapperApplicationBalance mapperApplicationBalance) {
+                                        MapperApplicationBalance mapperApplicationBalance, GenericEventPublisherPort genericEventPublisherPort) {
         this.cardFindByIdPort = cardFindByIdPort;
         this.balanceDBFindByIdPort = balanceDBFindByIdPort;
         this.balanceDBSavePort = balanceDBSavePort;
@@ -66,6 +69,7 @@ public class SplitConsumptionSplitService implements ConsumptionSplitUseCase {
         this.mapperApplicationConsumption = mapperApplicationConsumption;
         this.mapperApplicationCard = mapperApplicationCard;
         this.mapperApplicationBalance = mapperApplicationBalance;
+        this.genericEventPublisherPort = genericEventPublisherPort;
     }
 
     @Override
@@ -103,7 +107,18 @@ public class SplitConsumptionSplitService implements ConsumptionSplitUseCase {
         var card = mapperApplicationCard.toDomain(cardResponseDto);
         var balance = mapperApplicationBalance.toDomain(balanceResponseDto);
 
-        var consumptions = card.split(balance, consumption, cardSplitConsumptionCommand.installments());
+
+        var consumptions = consumption.splitConsumption(cardSplitConsumptionCommand.installments(), card.getCredit().getDebtTax());
+        balance.cancelConsumption(consumption.getConsumptionAmount());
+        consumption.close();
+        card.updateStatus(balance.isOvercharged());
+
+        consumptions.stream()
+                .map(Consumption::getConsumptionAmount)
+                .forEach(amount -> {
+                    balance.consumeBalance(amount, card.getCardStatus());
+                    card.updateStatus(balance.isOvercharged());
+                });
 
         var consumptionIds = consumptions.stream()
                 .map(mapperApplicationConsumption::toDto)
@@ -117,6 +132,11 @@ public class SplitConsumptionSplitService implements ConsumptionSplitUseCase {
 
         this.consumptionDBSavePort.save(consumptionRequestDto).orElseThrow(() -> new ApplicationConsumptionException(FAILED_TO_UPDATE_CONSUMPTION));
         this.balanceDBSavePort.save(balanceRequestDto).orElseThrow(() -> new ApplicationBalanceException(FAILED_TO_UPDATE_BALANCE));
+
+        card.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        balance.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        consumption.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        consumptions.forEach(consum -> consum.pullDomainEvents().forEach(genericEventPublisherPort::publish));
 
         return consumptionIds;
     }

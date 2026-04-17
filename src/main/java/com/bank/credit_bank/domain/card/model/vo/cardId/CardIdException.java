@@ -1,16 +1,16 @@
-package com.bank.credit_bank.domain.card.model.exceptions;
+package com.bank.credit_bank.domain.card.model.vo.cardId;
 
 import com.bank.credit_bank.domain.generic.exceptions.EntityException;
 
 import java.security.PrivilegedActionException;
 
-public class CreditException extends EntityException {
+public class CardIdException extends EntityException {
     /**
      * Constructs a new exception with {@code null} as its detail message.
      * The cause is not initialized, and may subsequently be initialized by a
      * call to {@link #initCause}.
      */
-    public CreditException() {
+    public CardIdException() {
     }
 
     /**
@@ -21,7 +21,7 @@ public class CreditException extends EntityException {
      * @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
-    public CreditException(String message) {
+    public CardIdException(String message) {
         super(message);
     }
 
@@ -39,7 +39,7 @@ public class CreditException extends EntityException {
      *                unknown.)
      * @since 1.4
      */
-    public CreditException(String message, Throwable cause) {
+    public CardIdException(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -57,7 +57,7 @@ public class CreditException extends EntityException {
      *              unknown.)
      * @since 1.4
      */
-    public CreditException(Throwable cause) {
+    public CardIdException(Throwable cause) {
         super(cause);
     }
 
@@ -75,7 +75,7 @@ public class CreditException extends EntityException {
      *                           be writable
      * @since 1.7
      */
-    public CreditException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public CardIdException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

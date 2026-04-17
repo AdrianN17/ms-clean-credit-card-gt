@@ -1,8 +1,6 @@
-package com.bank.credit_bank.domain.card.model.vo;
+package com.bank.credit_bank.domain.card.model.vo.paymentDay;
 
-import com.bank.credit_bank.domain.card.model.exceptions.PaymentDayException;
-
-import static com.bank.credit_bank.domain.card.model.constants.PaymentDayErrorMessage.PAYMENT_DAY_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.card.model.vo.paymentDay.PaymentDayErrorMessage.PAYMENT_DAY_CANNOT_BE_NULL;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 
 public class PaymentDay {

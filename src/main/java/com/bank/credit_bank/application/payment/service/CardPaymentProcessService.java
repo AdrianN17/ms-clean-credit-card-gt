@@ -14,6 +14,7 @@ import com.bank.credit_bank.application.card.port.out.CardDBFindCurrencyPort;
 import com.bank.credit_bank.application.card.port.out.CardFindByIdPort;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
+import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.application.payment.commands.CardProcessPaymentCommand;
 import com.bank.credit_bank.application.payment.exceptions.ApplicationPaymentException;
 import com.bank.credit_bank.application.payment.mapper.MapperApplicationPayment;
@@ -24,7 +25,7 @@ import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.benefit.model.vo.Point;
 import com.bank.credit_bank.domain.card.model.enums.CategoryPaymentEnum;
-import com.bank.credit_bank.domain.card.model.vo.CardId;
+import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.payment.model.entities.Payment;
 import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
@@ -54,8 +55,10 @@ public class CardPaymentProcessService implements PaymentProcessUseCase {
     private final MapperApplicationCard mapperApplicationCard;
     private final MapperApplicationBalance mapperApplicationBalance;
     private final MapperApplicationBenefit mapperApplicationBenefit;
+    private final GenericEventPublisherPort genericEventPublisherPort;
 
-    public CardPaymentProcessService(CardFindByIdPort cardFindByIdPort, BalanceDBFindByIdPort balanceDBFindByIdPort, BenefitDBFindByIdPort benefitDBFindByIdPort, BenefitDBSavePort benefitDBSavePort, BalanceDBSavePort balanceDBSavePort, PaymentDBSavePort paymentDBSavePort, LoadCurrencyPort loadCurrencyPort, CardDBFindCurrencyPort cardDBFindCurrencyPort, MapperApplicationCurrency mapperApplicationCurrency, MapperApplicationPayment mapperApplicationPayment, MapperApplicationCard mapperApplicationCard, MapperApplicationBalance mapperApplicationBalance, MapperApplicationBenefit mapperApplicationBenefit) {
+
+    public CardPaymentProcessService(CardFindByIdPort cardFindByIdPort, BalanceDBFindByIdPort balanceDBFindByIdPort, BenefitDBFindByIdPort benefitDBFindByIdPort, BenefitDBSavePort benefitDBSavePort, BalanceDBSavePort balanceDBSavePort, PaymentDBSavePort paymentDBSavePort, LoadCurrencyPort loadCurrencyPort, CardDBFindCurrencyPort cardDBFindCurrencyPort, MapperApplicationCurrency mapperApplicationCurrency, MapperApplicationPayment mapperApplicationPayment, MapperApplicationCard mapperApplicationCard, MapperApplicationBalance mapperApplicationBalance, MapperApplicationBenefit mapperApplicationBenefit, GenericEventPublisherPort genericEventPublisherPort) {
         this.cardFindByIdPort = cardFindByIdPort;
         this.balanceDBFindByIdPort = balanceDBFindByIdPort;
         this.benefitDBFindByIdPort = benefitDBFindByIdPort;
@@ -69,6 +72,7 @@ public class CardPaymentProcessService implements PaymentProcessUseCase {
         this.mapperApplicationCard = mapperApplicationCard;
         this.mapperApplicationBalance = mapperApplicationBalance;
         this.mapperApplicationBenefit = mapperApplicationBenefit;
+        this.genericEventPublisherPort = genericEventPublisherPort;
     }
 
     @Override
@@ -101,31 +105,40 @@ public class CardPaymentProcessService implements PaymentProcessUseCase {
         var card = mapperApplicationCard.toDomain(cardResponseDto);
         var balance = mapperApplicationBalance.toDomain(balanceResponseDto);
 
-        Payment payment = Payment.builder()
+        var payment = Payment.builder()
                 .paymentAmount(Amount.create(Currency.create(CurrencyEnum.ofValue(paymentCurrency.currency()).orElseThrow(), paymentCurrency.exchangeRate()), cardProcessPaymentCommand.amount()))
                 .category(CategoryPaymentEnum.ofValue(cardProcessPaymentCommand.category()).orElseThrow())
                 .cardId(CardId.create(cardProcessPaymentCommand.cardId()))
                 .channelPayment(ChannelPaymentEnum.ofValue(cardProcessPaymentCommand.channelPayment()).orElseThrow())
                 .build();
 
-        if (isNull(cardProcessPaymentCommand.pointsUsed())) {
-            card.pay(balance, payment);
-        } else {
+        var paymentAmount = payment.getPaymentAmount();
+
+        if (!isNull(cardProcessPaymentCommand.pointsUsed()))
+        {
             var benefit = mapperApplicationBenefit.toDomain(benefitResponseDto);
 
-
-            Point point = Point.create(cardProcessPaymentCommand.pointsUsed());
-            card.pay(balance, benefit, payment, point);
+            var point = Point.create(cardProcessPaymentCommand.pointsUsed());
+            paymentAmount = benefit.discount(paymentAmount, point);
 
             var benefitRequestDto = mapperApplicationBenefit.toDto(benefit);
             this.benefitDBSavePort.save(benefitRequestDto).orElseThrow(() -> new ApplicationBenefitException(FAILED_TO_UPDATE_BENEFIT));
+
+            benefit.pullDomainEvents().forEach(genericEventPublisherPort::publish);
         }
+
+        balance.payBalance(paymentAmount, payment.getCategory(), payment.getPaymentApprobation());
+        card.updateStatus(balance.isOvercharged());
 
         var paymentRequestDto = mapperApplicationPayment.toDto(payment);
         var balanceRequestDto = mapperApplicationBalance.toDto(balance);
 
         this.paymentDBSavePort.save(paymentRequestDto).orElseThrow(() -> new ApplicationPaymentException(FAILED_TO_CREATE_PAYMENT));
         this.balanceDBSavePort.save(balanceRequestDto).orElseThrow(() -> new ApplicationBalanceException(FAILED_TO_UPDATE_BALANCE));
+
+        card.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        balance.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        payment.pullDomainEvents().forEach(genericEventPublisherPort::publish);
 
         return payment.getId();
     }

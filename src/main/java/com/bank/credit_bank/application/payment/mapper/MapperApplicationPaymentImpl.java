@@ -7,7 +7,7 @@ import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.card.model.enums.CategoryPaymentEnum;
-import com.bank.credit_bank.domain.card.model.vo.CardId;
+import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.payment.model.entities.Payment;
 import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
 

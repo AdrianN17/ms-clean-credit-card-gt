@@ -1,16 +1,16 @@
-package com.bank.credit_bank.domain.card.model.exceptions;
+package com.bank.credit_bank.domain.card.model.vo.creditId;
 
 import com.bank.credit_bank.domain.generic.exceptions.EntityException;
 
 import java.security.PrivilegedActionException;
 
-public class CardIdException extends EntityException {
+public class CreditException extends EntityException {
     /**
      * Constructs a new exception with {@code null} as its detail message.
      * The cause is not initialized, and may subsequently be initialized by a
      * call to {@link #initCause}.
      */
-    public CardIdException() {
+    public CreditException() {
     }
 
     /**
@@ -21,7 +21,7 @@ public class CardIdException extends EntityException {
      * @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
-    public CardIdException(String message) {
+    public CreditException(String message) {
         super(message);
     }
 
@@ -39,7 +39,7 @@ public class CardIdException extends EntityException {
      *                unknown.)
      * @since 1.4
      */
-    public CardIdException(String message, Throwable cause) {
+    public CreditException(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -57,7 +57,7 @@ public class CardIdException extends EntityException {
      *              unknown.)
      * @since 1.4
      */
-    public CardIdException(Throwable cause) {
+    public CreditException(Throwable cause) {
         super(cause);
     }
 
@@ -75,7 +75,7 @@ public class CardIdException extends EntityException {
      *                           be writable
      * @since 1.7
      */
-    public CardIdException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public CreditException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

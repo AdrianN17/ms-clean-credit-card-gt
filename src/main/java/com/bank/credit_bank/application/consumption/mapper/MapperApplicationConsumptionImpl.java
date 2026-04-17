@@ -6,7 +6,7 @@ import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Currency;
-import com.bank.credit_bank.domain.card.model.vo.CardId;
+import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 
 public class MapperApplicationConsumptionImpl implements MapperApplicationConsumption {

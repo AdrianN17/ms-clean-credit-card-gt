@@ -1,13 +1,11 @@
-package com.bank.credit_bank.domain.card.model.vo;
+package com.bank.credit_bank.domain.card.model.vo.cardId;
 
-import com.bank.credit_bank.domain.card.model.exceptions.CardIdException;
-
-import static com.bank.credit_bank.domain.card.model.constants.CardIdErrorMessage.CARD_ID_CANNOT_BE_NULL;
-import static com.bank.credit_bank.domain.card.model.constants.CardIdErrorMessage.CARD_ID_MUST_BE_NUMERIC;
+import static com.bank.credit_bank.domain.card.model.vo.cardId.CardIdErrorMessage.CARD_ID_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.card.model.vo.cardId.CardIdErrorMessage.CARD_ID_MUST_BE_NUMERIC;
 import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 
-public class CardId {
+public final class CardId {
     private final Long value;
 
     public CardId(Long value) {

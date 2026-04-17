@@ -4,7 +4,7 @@ import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Approbation;
 import com.bank.credit_bank.domain.card.model.enums.CategoryPaymentEnum;
-import com.bank.credit_bank.domain.card.model.vo.CardId;
+import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
 import com.bank.credit_bank.domain.payment.events.PaymentClosedEvent;
 import com.bank.credit_bank.domain.payment.events.PaymentCreatedEvent;
@@ -12,7 +12,6 @@ import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
 import com.bank.credit_bank.domain.payment.model.exceptions.PaymentException;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -60,6 +59,9 @@ public class Payment extends AggregateRoot<PaymentId> {
     }
 
     public void close() {
+        isNotConditional(isNull(getPaymentApprobation().getApprobationDate()),
+                new PaymentException(PAYMENT_IS_STILL_IN_APPROBATION));
+
         softDelete();
         addClosedEvent();
     }
@@ -79,20 +81,6 @@ public class Payment extends AggregateRoot<PaymentId> {
 
     private void addClosedEvent() {
         addEvent(new PaymentClosedEvent(id.getValue()));
-    }
-
-    public Payment discount(BigDecimal discount) {
-        return Payment.builder()
-                .paymentAmount(getPaymentAmount().descuento(discount))
-                .category(getCategory())
-                .cardId(getCardId())
-                .channelPayment(getChannelPayment())
-                .build();
-    }
-
-    public void validateIfPaymentIsInApprobation() {
-        isNotConditional(isNull(getPaymentApprobation().getApprobationDate()),
-                new PaymentException(PAYMENT_IS_STILL_IN_APPROBATION));
     }
 
     public static PaymentBuilder builder() {

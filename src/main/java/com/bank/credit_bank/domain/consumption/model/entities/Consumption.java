@@ -3,7 +3,7 @@ package com.bank.credit_bank.domain.consumption.model.entities;
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Approbation;
-import com.bank.credit_bank.domain.card.model.vo.CardId;
+import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.consumption.events.ConsumptionClosedEvent;
 import com.bank.credit_bank.domain.consumption.events.ConsumptionCreatedEvent;
 import com.bank.credit_bank.domain.consumption.model.exceptions.ConsumptionException;
@@ -56,6 +56,9 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
     }
 
     public void close() {
+        isNotConditional(isNull(getConsumptionApprobation().getApprobationDate()),
+                new ConsumptionException(CONSUMPTION_IS_STILL_IN_APPROBATION));
+
         softDelete();
         addClosedEvent();
     }
@@ -80,8 +83,11 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
         return getSellerName().getValue() + CONSUMPTION_SPLIT + " " + count;
     }
 
-    public List<Consumption> split(Integer quantity,
+    public List<Consumption> splitConsumption(Integer quantity,
                                    BigDecimal tax) {
+
+        isNotConditional(isNull(getConsumptionApprobation().getApprobationDate()),
+                new ConsumptionException(CONSUMPTION_IS_STILL_IN_APPROBATION));
 
         isNotNull(quantity, new ConsumptionException(QUANTITY_CANNOT_BE_NULL));
         isNotNull(tax, new ConsumptionException(TAX_AMOUNT_CANNOT_BE_NULL));
@@ -97,11 +103,6 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
                     .sellerName(getSplitSellerName(value))
                     .build();
         }).toList();
-    }
-
-    public void validateIfConsumptionIsInApprobation() {
-        isNotConditional(isNull(getConsumptionApprobation().getApprobationDate()),
-                new ConsumptionException(CONSUMPTION_IS_STILL_IN_APPROBATION));
     }
 
     public static ConsumptionBuilder builder() {

@@ -17,6 +17,7 @@ import com.bank.credit_bank.application.consumption.port.out.ConsumptionFindById
 import com.bank.credit_bank.application.consumption.port.out.ConsumptionDBSavePort;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
+import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import static com.bank.credit_bank.application.balance.constants.BalanceApplicationErrorMessage.BALANCE_NOT_FOUND;
@@ -29,16 +30,16 @@ public class ConsumptionCancelService implements ConsumptionCancelUseCase {
 
     private final CardFindByIdPort cardFindByIdPort;
     private final BalanceDBFindByIdPort balanceDBFindByIdPort;
-    private final ConsumptionFindByIdPort consumptionFindByIdPort;
+
     private final BalanceDBSavePort balanceDBSavePort;
     private final ConsumptionDBSavePort consumptionDBSavePort;
-    private final LoadCurrencyPort loadCurrencyPort;
     private final CardDBFindCurrencyPort cardDBFindCurrencyPort;
-    private final ConsumptionDBFindCurrencyPort consumptionDBFindCurrencyPort;
-    private final MapperApplicationCurrency mapperApplicationCurrency;
-    private final MapperApplicationConsumption mapperApplicationConsumption;
+
+
+
     private final MapperApplicationCard mapperApplicationCard;
     private final MapperApplicationBalance mapperApplicationBalance;
+    private final GenericEventPublisherPort genericEventPublisherPort;
 
     public ConsumptionCancelService(CardFindByIdPort cardFindByIdPort,
                                     BalanceDBFindByIdPort balanceDBFindByIdPort,
@@ -51,7 +52,7 @@ public class ConsumptionCancelService implements ConsumptionCancelUseCase {
                                     MapperApplicationCurrency mapperApplicationCurrency,
                                     MapperApplicationConsumption mapperApplicationConsumption,
                                     MapperApplicationCard mapperApplicationCard,
-                                    MapperApplicationBalance mapperApplicationBalance) {
+                                    MapperApplicationBalance mapperApplicationBalance, GenericEventPublisherPort genericEventPublisherPort) {
         this.cardFindByIdPort = cardFindByIdPort;
         this.balanceDBFindByIdPort = balanceDBFindByIdPort;
         this.consumptionFindByIdPort = consumptionFindByIdPort;
@@ -64,6 +65,7 @@ public class ConsumptionCancelService implements ConsumptionCancelUseCase {
         this.mapperApplicationConsumption = mapperApplicationConsumption;
         this.mapperApplicationCard = mapperApplicationCard;
         this.mapperApplicationBalance = mapperApplicationBalance;
+        this.genericEventPublisherPort = genericEventPublisherPort;
     }
 
     @Override
@@ -72,22 +74,14 @@ public class ConsumptionCancelService implements ConsumptionCancelUseCase {
         var cardCurrencyValue = cardDBFindCurrencyPort.load(cardCancelConsumptionCommand.cardId())
                 .orElseThrow(() -> new ApplicationCardException(CARD_NOT_FOUND));
 
-        var consumptionCurrencyValue = consumptionDBFindCurrencyPort
-                .load(cardCancelConsumptionCommand.consumptionId(), cardCancelConsumptionCommand.cardId().toString())
-                .orElseThrow(() -> new ApplicationConsumptionException(CONSUMPTION_NOT_FOUND));
 
         var cardCurrencyDto = loadCurrencyPort.load(cardCurrencyValue)
                 .orElseThrow(() -> new ApplicationCardException(CARD_CURRENCY_NOT_FOUND));
 
-        var consumptionCurrencyDto = loadCurrencyPort.load(consumptionCurrencyValue)
-                .orElseThrow(() -> new ApplicationConsumptionException(CONSUMPTION_CURRENCY_NOT_FOUND));
+
 
         var cardCurrency = mapperApplicationCurrency.toDtoRequest(cardCurrencyDto);
-        var consumptionCurrency = mapperApplicationCurrency.toDtoRequest(consumptionCurrencyDto);
 
-        var consumptionResponseDto = consumptionFindByIdPort
-                .load(cardCancelConsumptionCommand.consumptionId(), cardCancelConsumptionCommand.cardId().toString(), consumptionCurrency)
-                .orElseThrow(() -> new ApplicationConsumptionException(CONSUMPTION_NOT_FOUND));
 
         var cardResponseDto = cardFindByIdPort
                 .load(cardCancelConsumptionCommand.cardId(), cardCurrency)
@@ -97,17 +91,23 @@ public class ConsumptionCancelService implements ConsumptionCancelUseCase {
                 .load(cardCancelConsumptionCommand.cardId(), cardCurrency)
                 .orElseThrow(() -> new ApplicationBalanceException(BALANCE_NOT_FOUND));
 
-        var consumption = mapperApplicationConsumption.toDomain(consumptionResponseDto);
+
         var card = mapperApplicationCard.toDomain(cardResponseDto);
         var balance = mapperApplicationBalance.toDomain(balanceResponseDto);
 
-        card.cancelConsumption(balance, consumption);
+        balance.cancelConsumption(consumption.getConsumptionAmount());
+        card.updateStatus(balance.isOvercharged());
+        consumption.close();
 
         var consumptionRequestDto = mapperApplicationConsumption.toDto(consumption);
         var balanceRequestDto = mapperApplicationBalance.toDto(balance);
 
         this.consumptionDBSavePort.save(consumptionRequestDto).orElseThrow(() -> new ApplicationConsumptionException(FAILED_TO_UPDATE_CONSUMPTION));
         this.balanceDBSavePort.save(balanceRequestDto).orElseThrow(() -> new ApplicationBalanceException(FAILED_TO_UPDATE_BALANCE));
+
+        card.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        balance.pullDomainEvents().forEach(genericEventPublisherPort::publish);
+        consumption.pullDomainEvents().forEach(genericEventPublisherPort::publish);
 
         return consumption.getId();
     }

@@ -1,12 +1,11 @@
-package com.bank.credit_bank.domain.card.model.vo;
+package com.bank.credit_bank.domain.card.model.vo.creditId;
 
 
 import com.bank.credit_bank.domain.base.vo.Amount;
-import com.bank.credit_bank.domain.card.model.exceptions.CreditException;
 
 import java.math.BigDecimal;
 
-import static com.bank.credit_bank.domain.card.model.constants.CreditErrorMessage.*;
+import static com.bank.credit_bank.domain.card.model.vo.creditId.CreditErrorMessage.*;
 import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 

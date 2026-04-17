@@ -1,4 +1,4 @@
-package com.bank.credit_bank.domain.card.model.constants;
+package com.bank.credit_bank.domain.card.model.vo.creditId;
 
 public interface CreditErrorMessage {
     String CREDITICIAL_TOTAL_REQUIRED = "Crediticial total is required";
