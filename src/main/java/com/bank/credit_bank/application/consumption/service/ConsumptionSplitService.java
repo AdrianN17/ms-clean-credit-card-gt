@@ -10,6 +10,8 @@ import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import java.util.List;
 
+import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.CONSUMPTION;
+
 public class ConsumptionSplitService implements ConsumptionSplitUseCase {
 
     private final BusinessServiceCard businessServiceCard;
@@ -26,19 +28,20 @@ public class ConsumptionSplitService implements ConsumptionSplitUseCase {
     public List<ConsumptionId> execute(CardSplitConsumptionCommand cardSplitConsumptionCommand) {
 
         var card = businessServiceCard.get(cardSplitConsumptionCommand.cardId());
-        var balance = businessServiceBalance.get(cardSplitConsumptionCommand.cardId());
+        var balance = businessServiceBalance.get(cardSplitConsumptionCommand.cardId(), CONSUMPTION);
         var consumption = businessServiceConsumption.get(cardSplitConsumptionCommand.cardId(),
                 cardSplitConsumptionCommand.consumptionId());
 
-        var consumptions = consumption.splitConsumption(cardSplitConsumptionCommand.installments(), card.getCredit().getDebtTax());
-        balance.cancelConsumption(consumption.getConsumptionAmount());
+        var consumptions = consumption.split(cardSplitConsumptionCommand.installments(), card.getCredit().getDebtTax());
+        balance.cancel(consumption.getConsumptionAmount());
+        card.validateIfCardIfInDebt();
         consumption.close();
         card.updateStatus(balance.isOvercharged());
 
         consumptions.stream()
                 .map(Consumption::getConsumptionAmount)
                 .forEach(amount -> {
-                    balance.consumeBalance(amount, card.getCardStatus());
+                    balance.apply(amount);
                     card.updateStatus(balance.isOvercharged());
                 });
 

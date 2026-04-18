@@ -3,6 +3,7 @@ package com.bank.credit_bank.domain.base.vo;
 import com.bank.credit_bank.domain.base.exceptions.DateRangeException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static com.bank.credit_bank.domain.base.constants.DateRangeConstant.NEXT_MONTH;
 import static com.bank.credit_bank.domain.base.constants.DateRangeErrorMessage.END_DATE_BEFORE_START_DATE;

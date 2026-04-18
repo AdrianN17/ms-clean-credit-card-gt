@@ -13,4 +13,5 @@ public interface CardErrorMessage {
     String ID_CANNOT_BE_NULL = "ID cannot be null";
     String CARD_STATUS_CANNOT_BE_NULL = "Card status cannot be null";
 
+    String IN_DEBT_CARD = "No se puede pagar una tarjeta que esta en deuda";
 }

@@ -3,37 +3,40 @@ package com.bank.credit_bank.application.payment.mapper;
 import com.bank.credit_bank.application.payment.dto.request.PaymentRequestDto;
 import com.bank.credit_bank.application.payment.dto.response.PaymentResponseDto;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
-import com.bank.credit_bank.domain.base.enums.StatusEnum;
-import com.bank.credit_bank.domain.base.vo.Amount;
-import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.card.model.enums.CategoryPaymentEnum;
-import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.payment.model.entities.Payment;
 import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
+import com.bank.credit_bank.domain.payment.model.factory.PaymentFactory;
 
 public class MapperApplicationPaymentImpl implements MapperApplicationPayment {
 
+    private final PaymentFactory paymentFactory;
+
+    public MapperApplicationPaymentImpl(PaymentFactory paymentFactory) {
+        this.paymentFactory = paymentFactory;
+    }
+
+
     @Override
     public Payment toDomain(PaymentResponseDto dto) {
-        CurrencyEnum currencyEnum = CurrencyEnum.valueOf(dto.currency());
-        Currency currency = Currency.create(currencyEnum, dto.exchangeRate());
-        Amount amount = Amount.create(currency, dto.amount());
-        CardId cardId = CardId.create(dto.cardId());
-        StatusEnum status = StatusEnum.ofValue(dto.status()).orElse(StatusEnum.ACTIVE);
-        CategoryPaymentEnum category = CategoryPaymentEnum.valueOf(dto.category());
-        ChannelPaymentEnum channelPayment = ChannelPaymentEnum.valueOf(dto.channelPayment());
+        Integer currency = CurrencyEnum.valueOf(dto.currency()).getValue();
+        Integer category = CategoryPaymentEnum.valueOf(dto.category()).getValue();
+        Integer channelPayment = ChannelPaymentEnum.valueOf(dto.channelPayment()).getValue();
 
-        return Payment.builder()
-                .id(dto.id())
-                .status(status)
-                .createdDate(dto.createdDate())
-                .updatedDate(dto.updatedDate())
-                .paymentAmount(amount)
-                .approbation(dto.paymentDate(), dto.paymentApprobationDate())
-                .category(category)
-                .cardId(cardId)
-                .channelPayment(channelPayment)
-                .build();
+        return paymentFactory.create(
+                dto.id(),
+                dto.status(),
+                dto.createdDate(),
+                dto.updatedDate(),
+                currency,
+                dto.exchangeRate(),
+                dto.amount(),
+                dto.paymentDate(),
+                dto.paymentApprobationDate(),
+                category,
+                dto.cardId(),
+                channelPayment
+        );
     }
 
     @Override

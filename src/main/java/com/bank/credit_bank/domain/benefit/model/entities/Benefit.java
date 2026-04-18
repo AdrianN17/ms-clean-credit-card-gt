@@ -9,7 +9,6 @@ import com.bank.credit_bank.domain.benefit.model.exceptions.BenefitException;
 import com.bank.credit_bank.domain.benefit.model.vo.BenefitId;
 import com.bank.credit_bank.domain.benefit.model.vo.DiscountPolicy;
 import com.bank.credit_bank.domain.benefit.model.vo.Point;
-import com.bank.credit_bank.domain.card.model.enums.CategoryCardEnum;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
 
@@ -53,20 +52,9 @@ public class Benefit extends AggregateRoot<BenefitId> {
         addClosedEvent();
     }
 
-    public void accumulate(Amount amount, CategoryCardEnum categoryCard) {
+    public void accumulate(Amount amount, BigDecimal ratio) {
 
         isNotNull(amount, new BenefitException(AMOUNT_NOT_NULL));
-        isNotNull(categoryCard, new BenefitException(CATEGORY_NOT_NULL));
-
-        BigDecimal ratio = switch (categoryCard) {
-            case NORMAL -> RATIO_NORMAL;
-            case SILVER -> RATIO_SILVER;
-            case GOLD -> RATIO_GOLD;
-            case PLATINUM -> RATIO_PLATINUM;
-            case BLACK -> RATIO_BLACK;
-            case SIGNATURE -> RATIO_SIGNATURE;
-            case INFINITY -> RATIO_INFINITY;
-        };
 
         Integer pointEarned = amount.getAmount().divide(ratio, RoundingMode.DOWN).intValue();
 
@@ -76,16 +64,16 @@ public class Benefit extends AggregateRoot<BenefitId> {
         addUpdatedEvent();
     }
 
-    public Amount discount(Amount amount, Point puntosUsar) {
+    public Amount discount(Amount amount, Point usedPoints) {
         isNotNull(amount, new BenefitException(PAYMENT_NOT_NULL));
-        isNotNull(puntosUsar, new BenefitException(POINT_NOT_NULL));
+        isNotNull(usedPoints, new BenefitException(POINT_NOT_NULL));
 
         isNotConditional(getTotalPoints()
-                .calculateIfHaveEnoughPoints(puntosUsar), new BenefitException(NOT_ENOUGH_POINTS));
+                .calculateIfHaveEnoughPoints(usedPoints), new BenefitException(NOT_ENOUGH_POINTS));
 
         Point calculatePoints = (getDiscountPolicy().getHasDiscount()) ?
-                puntosUsar.mulitply(getDiscountPolicy().getMultiplierPoints()) :
-                puntosUsar;
+                usedPoints.mulitply(getDiscountPolicy().getMultiplierPoints()) :
+                usedPoints;
 
         BigDecimal discount = new BigDecimal(calculatePoints.getPointEarned()).multiply(DISCOUNT_PER_POINT);
 

@@ -19,11 +19,15 @@ import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import static com.bank.credit_bank.domain.base.enums.StatusEnum.ACTIVE;
+import static com.bank.credit_bank.domain.benefit.model.constants.BenefitConstant.*;
 import static com.bank.credit_bank.domain.card.model.constants.CardErrorMessage.*;
+import static com.bank.credit_bank.domain.card.model.enums.CardStatusEnum.IN_DEBT;
 import static com.bank.credit_bank.domain.card.model.enums.CardStatusEnum.OPERATIVE;
 import static com.bank.credit_bank.domain.card.model.vo.cardAccountId.CardAccountIdErrorMessage.CARD_ACCOUNTID_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 
 public class Card extends AggregateRoot<CardId> {
@@ -77,6 +81,22 @@ public class Card extends AggregateRoot<CardId> {
             this.cardStatus = OPERATIVE;
 
         addUpdatedEvent();
+    }
+
+    public void validateIfCardIfInDebt() {
+        isNotConditional(Objects.equals(cardStatus, IN_DEBT), new CardException(IN_DEBT_CARD));
+    }
+
+    public BigDecimal getRatio() {
+        return switch (categoryCard) {
+            case NORMAL -> RATIO_NORMAL;
+            case SILVER -> RATIO_SILVER;
+            case GOLD -> RATIO_GOLD;
+            case PLATINUM -> RATIO_PLATINUM;
+            case BLACK -> RATIO_BLACK;
+            case SIGNATURE -> RATIO_SIGNATURE;
+            case INFINITY -> RATIO_INFINITY;
+        };
     }
 
     public void close() {

@@ -3,24 +3,37 @@ package com.bank.credit_bank.application.balance.mapper;
 import com.bank.credit_bank.application.balance.dto.request.BalanceRequestDto;
 import com.bank.credit_bank.application.balance.dto.response.BalanceResponseDto;
 import com.bank.credit_bank.domain.balance.model.entities.Balance;
+import com.bank.credit_bank.domain.balance.model.factory.BalanceFactory;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
+import com.bank.credit_bank.domain.payment.model.factory.BalanceType;
 
 public class MapperApplicationBalanceImpl implements MapperApplicationBalance {
 
+    private final BalanceFactory balanceFactory;
+
+    public MapperApplicationBalanceImpl(BalanceFactory balanceFactory) {
+        this.balanceFactory = balanceFactory;
+    }
+
+
     @Override
-    public Balance toDomain(BalanceResponseDto dto) {
-        return Balance.builder()
-                .balanceId(dto.id())
-                .cardId(dto.cardId())
-                .currency(CurrencyEnum.valueOf(dto.currency()).getValue(), dto.exchangeRate())
-                .total(dto.total())
-                .old(dto.old())
-                .available(dto.available())
-                .dateRange(dto.startDate(), dto.endDate())
-                .status(dto.status())
-                .createdDate(dto.createdDate())
-                .updatedDate(dto.updatedDate())
-                .build();
+    public Balance toDomain(BalanceResponseDto dto, BalanceType balanceType) {
+
+        return balanceFactory.create(
+                dto.id(),
+                dto.status(),
+                dto.createdDate(),
+                dto.updatedDate(),
+                CurrencyEnum.valueOf(dto.currency()).getValue(),
+                dto.exchangeRate(),
+                dto.cardId(),
+                dto.total(),
+                dto.old(),
+                dto.available(),
+                dto.startDate(),
+                dto.endDate(),
+                balanceType
+        );
     }
 
     @Override

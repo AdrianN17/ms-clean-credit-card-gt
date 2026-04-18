@@ -19,10 +19,8 @@ public interface BalanceErrorMessage {
     String ID_CANNOT_BE_NULL = "ID cannot be null";
     String PAYMENT_DAY_CANNOT_BE_NULL = "Payment day cannot be null";
 
-    String IN_DEBT_CARD = "No se puede pay una tarjeta que no esta en deuda";
     String AMOUNT_EXCEED_CREDIT_LIMIT = "El monto de consumo excede la linea de credito";
 
-    String PAYMENT_CATEGORY_NOT_SAME_AS_PAYMENT = "La categoria de pay no coincide con el monto a pay";
     String PAYMENT_CATEGORY_EXCEED_LIKE = "El monto de pay excede en ";
 
 

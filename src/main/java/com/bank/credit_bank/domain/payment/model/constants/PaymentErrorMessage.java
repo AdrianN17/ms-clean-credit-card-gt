@@ -12,4 +12,13 @@ public interface PaymentErrorMessage {
 
     String POINTS_CANNOT_USED_WITH_PREPAY = "Points cannot be used with prepay";
 
+    String NORMAL_PAYMENT_MUST_BE_MORE_THAN_MINIMUN = "The normal payment must be more than the minimum payment.";
+    String NORMAL_PAYMENT_MUST_BE_LESS_THAN_TOTAL = "The normal payment must be less than the total payment.";
+    String TOTAL_PAYMENT_MUST_BE_COMPLETED = "The total payment must be completed.";
+
+    String PAYMENT_IT_NOT_NECCESARY = "The payment is not necessary.";
+    String PAYMENT_CATEGORY_NOT_SAME_AS_PAYMENT = "The payment category must be the same as the payment type.";
+
+    String MINIMUN_PAYMENT_MUST_BE_THIRD_PART_OF_AVAILABLE = "The minimum payment must be a third part of the available balance.";
+
 }

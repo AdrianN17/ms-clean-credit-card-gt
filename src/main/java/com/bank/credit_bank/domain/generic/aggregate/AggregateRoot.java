@@ -16,7 +16,6 @@ public abstract class AggregateRoot<T> extends GenericDomain<T> {
         super(id, status, createdDate, updatedDate);
     }
 
-
     protected void addEvent(DomainEvent event) {
         domainEvents.add(event);
     }

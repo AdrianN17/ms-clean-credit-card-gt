@@ -9,11 +9,15 @@ import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
 import com.bank.credit_bank.application.payment.commands.CardProcessPaymentCommand;
 import com.bank.credit_bank.application.payment.exceptions.ApplicationPaymentException;
 import com.bank.credit_bank.application.payment.port.in.PaymentProcessUseCase;
+import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
+import com.bank.credit_bank.domain.base.vo.Amount;
+import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.benefit.model.vo.Point;
-import com.bank.credit_bank.domain.payment.model.entities.Payment;
+import com.bank.credit_bank.domain.payment.model.factory.PaymentFactory;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
 import static com.bank.credit_bank.application.payment.constants.PaymentApplicationErrorMessage.PAYMENT_CURRENCY_NOT_FOUND;
+import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.PAYMENT;
 import static java.util.Objects.isNull;
 
 public class PaymentProcessService implements PaymentProcessUseCase {
@@ -24,35 +28,35 @@ public class PaymentProcessService implements PaymentProcessUseCase {
     private final BusinessServicePayment businessServicePayment;
     private final MapperApplicationCurrency mapperApplicationCurrency;
     private final LoadCurrencyPort loadCurrencyPort;
+    private final PaymentFactory paymentFactory;
 
-    public PaymentProcessService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceBenefit businessServiceBenefit, BusinessServicePayment businessServicePayment, MapperApplicationCurrency mapperApplicationCurrency, LoadCurrencyPort loadCurrencyPort) {
+    public PaymentProcessService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceBenefit businessServiceBenefit, BusinessServicePayment businessServicePayment, MapperApplicationCurrency mapperApplicationCurrency, LoadCurrencyPort loadCurrencyPort, PaymentFactory paymentFactory) {
         this.businessServiceCard = businessServiceCard;
         this.businessServiceBalance = businessServiceBalance;
         this.businessServiceBenefit = businessServiceBenefit;
         this.businessServicePayment = businessServicePayment;
         this.mapperApplicationCurrency = mapperApplicationCurrency;
         this.loadCurrencyPort = loadCurrencyPort;
+        this.paymentFactory = paymentFactory;
     }
 
     @Override
     public PaymentId execute(CardProcessPaymentCommand cardProcessPaymentCommand) {
 
         var card = businessServiceCard.get(cardProcessPaymentCommand.cardId());
-        var balance = businessServiceBalance.get(cardProcessPaymentCommand.cardId());
+        var balance = businessServiceBalance.get(cardProcessPaymentCommand.cardId(), PAYMENT);
 
         var paymentCurrencyDto = loadCurrencyPort.load(cardProcessPaymentCommand.currency())
                 .orElseThrow(() -> new ApplicationPaymentException(PAYMENT_CURRENCY_NOT_FOUND));
 
         var paymentCurrency = mapperApplicationCurrency.toDtoRequest(paymentCurrencyDto);
 
-        var payment = Payment.builder()
-                .paymentAmount(cardProcessPaymentCommand.amount(), paymentCurrency.currency(), paymentCurrency.exchangeRate())
-                .category(cardProcessPaymentCommand.category())
-                .cardId(cardProcessPaymentCommand.cardId())
-                .channelPayment(cardProcessPaymentCommand.channelPayment())
-                .build();
-
-        var paymentAmount = payment.getPaymentAmount();
+        var paymentAmount = Amount.create(
+                Currency.create(
+                        CurrencyEnum.ofValue(paymentCurrency.currency()).orElseThrow(),
+                        paymentCurrency.exchangeRate()),
+                cardProcessPaymentCommand.amount()
+        );
 
         if (!isNull(cardProcessPaymentCommand.pointsUsed())) {
             var benefit = businessServiceBenefit.get(cardProcessPaymentCommand.cardId());
@@ -63,7 +67,16 @@ public class PaymentProcessService implements PaymentProcessUseCase {
             businessServiceBenefit.save(benefit);
         }
 
-        balance.payBalance(paymentAmount, payment.getCategory(), payment.getPaymentApprobation());
+        var payment = paymentFactory.create(
+                paymentAmount.getCurrency().getCurrency().getValue(),
+                paymentAmount.getCurrency().getExchangeRate(),
+                paymentAmount.getAmount(),
+                cardProcessPaymentCommand.category(),
+                cardProcessPaymentCommand.cardId(),
+                cardProcessPaymentCommand.channelPayment());
+
+        payment.validateIfPaymentIsPossible(balance.getAvailable(), balance.getTotal(), balance.getDateRange());
+        balance.apply(paymentAmount);
         card.updateStatus(balance.isOvercharged());
 
         var id = businessServicePayment.save(payment);

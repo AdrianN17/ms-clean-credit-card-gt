@@ -13,6 +13,7 @@ import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import static com.bank.credit_bank.application.consumption.constants.ConsumptionApplicationErrorMessage.CONSUMPTION_CURRENCY_NOT_FOUND;
+import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.CONSUMPTION;
 
 public class ConsumptionProcessService implements ConsumptionProcessUseCase {
 
@@ -36,7 +37,7 @@ public class ConsumptionProcessService implements ConsumptionProcessUseCase {
     public ConsumptionId execute(CardProcessConsumptionCommand cardProcessConsumptionCommand) {
 
         var card = businessServiceCard.get(cardProcessConsumptionCommand.cardId());
-        var balance = businessServiceBalance.get(cardProcessConsumptionCommand.cardId());
+        var balance = businessServiceBalance.get(cardProcessConsumptionCommand.cardId(), CONSUMPTION);
         var benefit = businessServiceBenefit.get(cardProcessConsumptionCommand.cardId());
 
         var consumptionCurrencyDto = loadCurrencyPort.load(cardProcessConsumptionCommand.currency())
@@ -52,8 +53,10 @@ public class ConsumptionProcessService implements ConsumptionProcessUseCase {
                 .sellerName(cardProcessConsumptionCommand.sellerName())
                 .build();
 
-        benefit.accumulate(consumption.getConsumptionAmount(), card.getCategoryCard());
-        balance.consumeBalance(consumption.getConsumptionAmount(), card.getCardStatus());
+        card.validateIfCardIfInDebt();
+
+        benefit.accumulate(consumption.getConsumptionAmount(), card.getRatio());
+        balance.apply(consumption.getConsumptionAmount());
         card.updateStatus(balance.isOvercharged());
 
         var id = businessServiceConsumption.save(consumption);

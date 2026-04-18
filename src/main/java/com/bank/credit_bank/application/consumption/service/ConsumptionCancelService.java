@@ -7,6 +7,8 @@ import com.bank.credit_bank.application.consumption.commands.CardCancelConsumpti
 import com.bank.credit_bank.application.consumption.port.in.ConsumptionCancelUseCase;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
+import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.CONSUMPTION;
+
 public class ConsumptionCancelService implements ConsumptionCancelUseCase {
 
     private final BusinessServiceCard businessServiceCard;
@@ -23,11 +25,11 @@ public class ConsumptionCancelService implements ConsumptionCancelUseCase {
     public ConsumptionId execute(CardCancelConsumptionCommand cardCancelConsumptionCommand) {
 
         var card = businessServiceCard.get(cardCancelConsumptionCommand.cardId());
-        var balance = businessServiceBalance.get(cardCancelConsumptionCommand.cardId());
+        var balance = businessServiceBalance.get(cardCancelConsumptionCommand.cardId(), CONSUMPTION);
         var consumption = businessServiceConsumption.get(cardCancelConsumptionCommand.cardId(),
                 cardCancelConsumptionCommand.consumptionId());
 
-        balance.cancelConsumption(consumption.getConsumptionAmount());
+        balance.cancel(consumption.getConsumptionAmount());
         card.updateStatus(balance.isOvercharged());
         consumption.close();
 

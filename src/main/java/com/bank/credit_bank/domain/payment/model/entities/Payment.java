@@ -1,197 +1,42 @@
 package com.bank.credit_bank.domain.payment.model.entities;
 
-import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Approbation;
-import com.bank.credit_bank.domain.base.vo.Currency;
+import com.bank.credit_bank.domain.base.vo.DateRange;
 import com.bank.credit_bank.domain.card.model.enums.CategoryPaymentEnum;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
-import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
-import com.bank.credit_bank.domain.payment.events.PaymentClosedEvent;
-import com.bank.credit_bank.domain.payment.events.PaymentCreatedEvent;
+import com.bank.credit_bank.domain.generic.events.DomainEvent;
 import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
-import com.bank.credit_bank.domain.payment.model.exceptions.PaymentException;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.List;
 
-import static com.bank.credit_bank.domain.base.enums.StatusEnum.ACTIVE;
-import static com.bank.credit_bank.domain.payment.model.constants.PaymentErrorMessage.*;
-import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
-import static com.bank.credit_bank.domain.util.Validation.isNotNull;
-import static java.util.Objects.isNull;
+public interface Payment {
 
-public class Payment extends AggregateRoot<PaymentId> {
-    private final Amount paymentAmount;
-    private final Approbation paymentApprobation;
-    private final CategoryPaymentEnum category;
-    private final CardId cardId;
-    private final ChannelPaymentEnum channelPayment;
+    Amount getPaymentAmount();
 
-    private Payment(PaymentBuilder builder) {
-        super(builder.id, builder.status, builder.createdDate, builder.updatedDate);
-        this.paymentAmount = builder.paymentAmount;
-        this.paymentApprobation = builder.paymentApprobation;
-        this.category = builder.category;
-        this.cardId = builder.cardId;
-        this.channelPayment = builder.channelPayment;
-        addCreatedEvent();
-    }
+    Approbation getPaymentApprobation();
 
-    public Amount getPaymentAmount() {
-        return paymentAmount;
-    }
+    CategoryPaymentEnum getCategory();
 
-    public Approbation getPaymentApprobation() {
-        return paymentApprobation;
-    }
+    CardId getCardId();
 
-    public CategoryPaymentEnum getCategory() {
-        return category;
-    }
+    ChannelPaymentEnum getChannelPayment();
 
-    public CardId getCardId() {
-        return cardId;
-    }
+    StatusEnum getStatus();
 
-    public ChannelPaymentEnum getChannelPayment() {
-        return channelPayment;
-    }
+    LocalDateTime getCreatedDate();
 
-    public void close() {
-        isNotConditional(isNull(getPaymentApprobation().getApprobationDate()),
-                new PaymentException(PAYMENT_IS_STILL_IN_APPROBATION));
+    LocalDateTime getUpdatedDate();
 
-        softDelete();
-        addClosedEvent();
-    }
+    PaymentId getId();
 
-    private void addCreatedEvent() {
-        addEvent(new PaymentCreatedEvent(
-                id.getValue(),
-                cardId.getValue(),
-                paymentAmount.getAmount(),
-                paymentAmount.getCurrency().getCurrency().getValue(),
-                paymentAmount.getCurrency().getExchangeRate(),
-                category.getValue(),
-                channelPayment.getValue(),
-                paymentApprobation.getDate()
-        ));
-    }
+    void validateIfPaymentIsPossible(Amount available, Amount total, DateRange dateRange);
 
-    private void addClosedEvent() {
-        addEvent(new PaymentClosedEvent(id.getValue()));
-    }
+    void close();
 
-    public static PaymentBuilder builder() {
-        return new PaymentBuilder();
-    }
+    List<DomainEvent> pullDomainEvents();
 
-    public static class PaymentBuilder {
-        private PaymentId id;
-        private StatusEnum status;
-        private LocalDateTime createdDate;
-        private LocalDateTime updatedDate;
-        private Amount paymentAmount;
-        private Approbation paymentApprobation;
-        private CategoryPaymentEnum category;
-        private CardId cardId;
-        private ChannelPaymentEnum channelPayment;
-
-        public PaymentBuilder id(UUID id) {
-            this.id = PaymentId.create(id);
-            return this;
-        }
-
-        public PaymentBuilder status(StatusEnum status) {
-            this.status = status;
-            return this;
-        }
-
-        public PaymentBuilder createdDate(LocalDateTime createdDate) {
-            this.createdDate = createdDate;
-            return this;
-        }
-
-        public PaymentBuilder updatedDate(LocalDateTime updatedDate) {
-            this.updatedDate = updatedDate;
-            return this;
-        }
-
-        public PaymentBuilder paymentAmount(Amount paymentAmount) {
-            this.paymentAmount = paymentAmount;
-            return this;
-        }
-
-        public PaymentBuilder paymentAmount(BigDecimal amount, Integer currency, BigDecimal exchangeRate) {
-            isNotNull(amount, new PaymentException(PAYMENT_AMOUNT_NOT_NULL));
-            isNotNull(currency, new PaymentException(PAYMENT_CATEGORY_NOT_NULL));
-            isNotNull(exchangeRate, new PaymentException(PAYMENT_CATEGORY_NOT_NULL));
-            Currency cur = Currency.create(CurrencyEnum.ofValue(currency).orElseThrow(), exchangeRate);
-            this.paymentAmount = Amount.create(cur, amount);
-            return this;
-        }
-
-        public PaymentBuilder category(CategoryPaymentEnum category) {
-            this.category = category;
-            return this;
-        }
-
-        public PaymentBuilder category(Integer category) {
-            this.category = CategoryPaymentEnum.ofValue(category).orElseThrow(
-                    () -> new PaymentException(PAYMENT_CATEGORY_NOT_NULL));
-            return this;
-        }
-
-        public PaymentBuilder cardId(CardId cardId) {
-            this.cardId = cardId;
-            return this;
-        }
-
-        public PaymentBuilder cardId(Long cardId) {
-            isNotNull(cardId, new PaymentException(CARD_ID_NOT_NULL));
-            this.cardId = CardId.create(cardId);
-            return this;
-        }
-
-        public PaymentBuilder channelPayment(ChannelPaymentEnum channelPayment) {
-            this.channelPayment = channelPayment;
-            return this;
-        }
-
-        public PaymentBuilder channelPayment(Integer channelPayment) {
-            this.channelPayment = ChannelPaymentEnum.ofValue(channelPayment).orElseThrow(
-                    () -> new PaymentException(CHANGE_PAYMENT_NOT_NULL));
-            return this;
-        }
-
-        public PaymentBuilder approbation(LocalDateTime date, LocalDateTime approbationDate) {
-            this.paymentApprobation = Approbation.create(date, approbationDate);
-            return this;
-        }
-
-        public PaymentBuilder approbation(LocalDateTime date) {
-            this.paymentApprobation = Approbation.create(date);
-            return this;
-        }
-
-        public Payment build() {
-            if (this.id == null)
-                this.id = PaymentId.create(UUID.randomUUID());
-            if (this.status == null) this.status = ACTIVE;
-            if (this.createdDate == null) this.createdDate = LocalDateTime.now();
-            if (this.paymentApprobation == null) this.paymentApprobation = Approbation.create(LocalDateTime.now());
-
-            isNotNull(paymentAmount, new PaymentException(PAYMENT_AMOUNT_NOT_NULL));
-            isNotNull(category, new PaymentException(PAYMENT_CATEGORY_NOT_NULL));
-            isNotNull(cardId, new PaymentException(CARD_ID_NOT_NULL));
-            isNotNull(channelPayment, new PaymentException(CHANGE_PAYMENT_NOT_NULL));
-            isNotConditional(paymentAmount.estaVacio(), new PaymentException(PAYMENT_AMOUNT_NOT_ZERO));
-
-            return new Payment(this);
-        }
-    }
 }

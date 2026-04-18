@@ -9,7 +9,7 @@ import com.bank.credit_bank.application.card.port.in.CardCreateUseCase;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
 import com.bank.credit_bank.application.generator.exceptions.ApplicationGeneratorException;
 import com.bank.credit_bank.application.generator.port.out.IdGeneratePort;
-import com.bank.credit_bank.domain.balance.model.entities.Balance;
+import com.bank.credit_bank.domain.balance.model.entities.old.Balance;
 import com.bank.credit_bank.domain.benefit.model.entities.Benefit;
 import com.bank.credit_bank.domain.card.model.entities.Card;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;

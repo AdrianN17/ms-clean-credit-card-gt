@@ -81,12 +81,12 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
         addEvent(new ConsumptionClosedEvent(id.getValue()));
     }
 
-    public String getSplitSellerName(int count) {
+    private String getSplitSellerName(int count) {
         return getSellerName().getValue() + CONSUMPTION_SPLIT + " " + count;
     }
 
-    public List<Consumption> splitConsumption(Integer quantity,
-                                              BigDecimal tax) {
+    public List<Consumption> split(Integer quantity,
+                                   BigDecimal tax) {
 
         isNotConditional(isNull(getConsumptionApprobation().getApprobationDate()),
                 new ConsumptionException(CONSUMPTION_IS_STILL_IN_APPROBATION));

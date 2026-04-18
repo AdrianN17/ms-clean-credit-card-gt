@@ -60,6 +60,11 @@ public class Amount {
                 this.amount.subtract(convertir(this, amount).getAmount()));
     }
 
+    public Amount dividir(Integer quantity) {
+        return Amount.create(getCurrency(),
+                this.amount.divide(BigDecimal.valueOf(quantity)));
+    }
+
     public static Amount convertir(Amount a, Amount b) {
         if (!a.getCurrency().sonIguales(b.getCurrency()))
             return Amount.create(Currency.create(a.getCurrency().getCurrency(), a.getCurrency().getExchangeRate()),

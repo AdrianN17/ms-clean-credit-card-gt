@@ -7,6 +7,8 @@ import com.bank.credit_bank.application.payment.commands.CardCancelPaymentComman
 import com.bank.credit_bank.application.payment.port.in.PaymentCancelUseCase;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
+import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.PAYMENT;
+
 public class PaymentCancelService implements PaymentCancelUseCase {
 
     private final BusinessServiceCard businessServiceCard;
@@ -23,10 +25,10 @@ public class PaymentCancelService implements PaymentCancelUseCase {
     public PaymentId execute(CardCancelPaymentCommand cardCancelPaymentCommand) {
 
         var card = businessServiceCard.get(cardCancelPaymentCommand.cardId());
-        var balance = businessServiceBalance.get(cardCancelPaymentCommand.cardId());
+        var balance = businessServiceBalance.get(cardCancelPaymentCommand.cardId(), PAYMENT);
         var payment = businessServicePayment.get(cardCancelPaymentCommand.cardId(), cardCancelPaymentCommand.paymentId());
 
-        balance.cancelPayment(payment.getPaymentAmount());
+        balance.cancel(payment.getPaymentAmount());
         card.updateStatus(balance.isOvercharged());
         payment.close();
 
