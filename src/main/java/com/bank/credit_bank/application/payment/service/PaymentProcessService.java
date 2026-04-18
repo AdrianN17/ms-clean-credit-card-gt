@@ -9,10 +9,12 @@ import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
 import com.bank.credit_bank.application.payment.commands.CardProcessPaymentCommand;
 import com.bank.credit_bank.application.payment.exceptions.ApplicationPaymentException;
 import com.bank.credit_bank.application.payment.port.in.PaymentProcessUseCase;
+import com.bank.credit_bank.domain.balance.model.entities.Balance;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.benefit.model.vo.Point;
+import com.bank.credit_bank.domain.card.model.entities.Card;
 import com.bank.credit_bank.domain.payment.model.factory.PaymentFactory;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
@@ -58,14 +60,44 @@ public class PaymentProcessService implements PaymentProcessUseCase {
                 cardProcessPaymentCommand.amount()
         );
 
-        if (!isNull(cardProcessPaymentCommand.pointsUsed())) {
-            var benefit = businessServiceBenefit.get(cardProcessPaymentCommand.cardId());
+        if (!isNull(cardProcessPaymentCommand.pointsUsed()))
+            return paymentProcessWithBenefit(cardProcessPaymentCommand, paymentAmount, card, balance);
+        else
+            return paymentProcessNoBenefit(cardProcessPaymentCommand, paymentAmount, card, balance);
+    }
 
-            var point = Point.create(cardProcessPaymentCommand.pointsUsed());
-            paymentAmount = benefit.discount(paymentAmount, point);
+    private PaymentId paymentProcessWithBenefit(CardProcessPaymentCommand cardProcessPaymentCommand,
+                                                Amount paymentAmount,
+                                                Card card, Balance balance) {
 
-            businessServiceBenefit.save(benefit);
-        }
+        var benefit = businessServiceBenefit.get(cardProcessPaymentCommand.cardId());
+
+        var point = Point.create(cardProcessPaymentCommand.pointsUsed());
+        paymentAmount = benefit.discount(paymentAmount, point);
+
+        var payment = paymentFactory.create(
+                paymentAmount.getCurrency().getCurrency().getValue(),
+                paymentAmount.getCurrency().getExchangeRate(),
+                paymentAmount.getAmount(),
+                cardProcessPaymentCommand.category(),
+                cardProcessPaymentCommand.cardId(),
+                cardProcessPaymentCommand.channelPayment());
+
+        payment.validateIfPaymentIsPossible(balance.getAvailable(), balance.getTotal(), balance.getDateRange());
+        balance.apply(paymentAmount);
+        card.updateStatus(balance.isOvercharged());
+
+        var id = businessServicePayment.save(payment);
+        businessServiceBalance.save(balance);
+        businessServiceCard.save(card);
+        businessServiceBenefit.save(benefit);
+
+        return id;
+    }
+
+    private PaymentId paymentProcessNoBenefit(CardProcessPaymentCommand cardProcessPaymentCommand,
+                                              Amount paymentAmount,
+                                              Card card, Balance balance) {
 
         var payment = paymentFactory.create(
                 paymentAmount.getCurrency().getCurrency().getValue(),
@@ -85,4 +117,5 @@ public class PaymentProcessService implements PaymentProcessUseCase {
 
         return id;
     }
+
 }
