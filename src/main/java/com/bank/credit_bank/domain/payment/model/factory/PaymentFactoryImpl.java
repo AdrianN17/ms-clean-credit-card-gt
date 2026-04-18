@@ -2,11 +2,7 @@ package com.bank.credit_bank.domain.payment.model.factory;
 
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.card.model.enums.CategoryPaymentEnum;
-import com.bank.credit_bank.domain.payment.model.entities.MinimunPayment;
-import com.bank.credit_bank.domain.payment.model.entities.NormalPayment;
-import com.bank.credit_bank.domain.payment.model.entities.Payment;
-import com.bank.credit_bank.domain.payment.model.entities.Prepayment;
-import com.bank.credit_bank.domain.payment.model.entities.TotalPayment;
+import com.bank.credit_bank.domain.payment.model.entities.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

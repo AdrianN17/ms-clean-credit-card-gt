@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface BusinessServicePayment {
     Payment get(Long cardId, UUID paymentId);
+
     PaymentId save(Payment payment);
 }

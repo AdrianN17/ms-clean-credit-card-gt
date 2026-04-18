@@ -9,13 +9,14 @@ import com.bank.credit_bank.application.card.port.in.CardCreateUseCase;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
 import com.bank.credit_bank.application.generator.exceptions.ApplicationGeneratorException;
 import com.bank.credit_bank.application.generator.port.out.IdGeneratePort;
-import com.bank.credit_bank.domain.balance.model.entities.old.Balance;
+import com.bank.credit_bank.domain.balance.model.factory.BalanceFactory;
 import com.bank.credit_bank.domain.benefit.model.entities.Benefit;
 import com.bank.credit_bank.domain.card.model.entities.Card;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 
 import static com.bank.credit_bank.application.card.constants.CardApplicationErrorMessage.CARD_CURRENCY_NOT_FOUND;
 import static com.bank.credit_bank.application.generator.constants.GeneratorApplicationErrorMessage.*;
+import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.CONSUMPTION;
 
 public class CardCreateService implements CardCreateUseCase {
 
@@ -24,17 +25,19 @@ public class CardCreateService implements CardCreateUseCase {
     private final BusinessServiceBenefit businessServiceBenefit;
     private final IdGeneratePort idGeneratePort;
     private final LoadCurrencyPort loadCurrencyPort;
+    private final BalanceFactory balanceFactory;
 
     public CardCreateService(BusinessServiceCard businessServiceCard,
                              BusinessServiceBalance businessServiceBalance,
                              BusinessServiceBenefit businessServiceBenefit,
                              IdGeneratePort idGeneratePort,
-                             LoadCurrencyPort loadCurrencyPort) {
+                             LoadCurrencyPort loadCurrencyPort, BalanceFactory balanceFactory) {
         this.businessServiceCard = businessServiceCard;
         this.businessServiceBalance = businessServiceBalance;
         this.businessServiceBenefit = businessServiceBenefit;
         this.idGeneratePort = idGeneratePort;
         this.loadCurrencyPort = loadCurrencyPort;
+        this.balanceFactory = balanceFactory;
     }
 
     @Override
@@ -60,13 +63,13 @@ public class CardCreateService implements CardCreateUseCase {
                         currencyResponseDto.exchangeRate())
                 .build();
 
-        var balance = Balance.builder()
-                .balanceId(idBalance)
-                .cardId(idCard)
-                .total(cardCreateCommand.creditTotal())
-                .dateRange(cardCreateCommand.paymentDay())
-                .currency(currencyResponseDto.currency(), currencyResponseDto.exchangeRate())
-                .build();
+        var balance = balanceFactory.create(idBalance,
+                currencyResponseDto.currency(),
+                currencyResponseDto.exchangeRate(),
+                idCard,
+                cardCreateCommand.creditTotal(),
+                cardCreateCommand.paymentDay(),
+                CONSUMPTION);
 
         var benefit = Benefit.builder()
                 .benefitId(idBenefit)

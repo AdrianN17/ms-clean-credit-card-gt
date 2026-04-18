@@ -17,7 +17,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 import static com.bank.credit_bank.domain.base.enums.StatusEnum.ACTIVE;
-import static com.bank.credit_bank.domain.benefit.model.constants.BenefitConstant.*;
+import static com.bank.credit_bank.domain.benefit.model.constants.BenefitConstant.DISCOUNT_PER_POINT;
 import static com.bank.credit_bank.domain.benefit.model.constants.BenefitErrorMessage.*;
 import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;

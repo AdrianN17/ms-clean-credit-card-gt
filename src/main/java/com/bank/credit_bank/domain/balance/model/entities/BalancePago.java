@@ -50,19 +50,29 @@ public class BalancePago extends AggregateRoot<BalanceId> implements Balance {
     }
 
     @Override
-    public CardId getCardId() { return this.cardId; }
+    public CardId getCardId() {
+        return this.cardId;
+    }
 
     @Override
-    public Amount getTotal() { return this.total; }
+    public Amount getTotal() {
+        return this.total;
+    }
 
     @Override
-    public Amount getOld() { return this.old; }
+    public Amount getOld() {
+        return this.old;
+    }
 
     @Override
-    public DateRange getDateRange() { return this.dateRange; }
+    public DateRange getDateRange() {
+        return this.dateRange;
+    }
 
     @Override
-    public Amount getAvailable() { return this.available; }
+    public Amount getAvailable() {
+        return this.available;
+    }
 
     @Override
     public void close() {
