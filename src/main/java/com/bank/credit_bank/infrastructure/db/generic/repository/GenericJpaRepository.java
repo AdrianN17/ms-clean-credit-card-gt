@@ -1,0 +1,21 @@
+package com.bank.credit_bank.infrastructure.db.generic.repository;
+
+import com.bank.credit_bank.domain.base.enums.StatusEnum;
+import com.bank.credit_bank.infrastructure.db.generic.entity.GenericEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.NoRepositoryBean;
+
+import java.util.Optional;
+
+@NoRepositoryBean
+public interface GenericJpaRepository<T, ID> extends JpaRepository<T, ID> {
+
+    default Optional<T> findActiveById(ID id) {
+        return findById(id).filter(e -> {
+            if (e instanceof GenericEntity ge) {
+                return StatusEnum.ACTIVE.equals(ge.getStatus());
+            }
+            return true;
+        });
+    }
+}

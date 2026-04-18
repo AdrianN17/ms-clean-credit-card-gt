@@ -1,0 +1,40 @@
+package com.bank.credit_bank.infrastructure.db.sql.sqlserver.entity;
+
+import com.bank.credit_bank.infrastructure.db.generic.entity.GenericEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+import java.math.BigDecimal;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+@EqualsAndHashCode(callSuper = false)
+@Entity
+@Table(name = "Benefits")
+public class BenefitEntity extends GenericEntity {
+
+    @Id
+    @Column(name = "idBenefit", nullable = false)
+    private Long idBenefit;
+
+    @Column(name = "cardId", nullable = false)
+    private Long cardId;
+
+    @Column(name = "hasDiscount", updatable = false)
+    private Boolean hasDiscount;
+
+    @Column(name = "totalPoints")
+    private Integer totalPoints;
+
+    @Column(name = "multiplierPoints", precision = 5, scale = 2, updatable = false)
+    private BigDecimal multiplierPoints;
+}
