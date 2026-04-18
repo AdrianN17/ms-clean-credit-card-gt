@@ -1,0 +1,31 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
+  datasource:
+    url: jdbc:sqlserver://adriandbs.database.windows.net;databaseName=adriandb;encrypt=false;trustServerCertificate=false;DB_CLOSE_DELAY=-1
+    username: adrian
+    password: ${SQLSERVER_PASSWORD}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+  liquibase:
+    change-log: classpath:db/changelog/database.yaml
+    enabled: true
+  cloud:
+    azure:
+      cosmos:
+        endpoint: https://azcosmosgt3.documents.azure.com:443/
+        key: ${COSMOS_KEY}
+        database: cosmosgtdata
+        populate-query-metrics: false
+api:
+  convert:
+    url: http://localhost:3001/convert/currency/
