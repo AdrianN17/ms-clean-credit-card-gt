@@ -16,7 +16,6 @@ import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 
 import static com.bank.credit_bank.application.card.constants.CardApplicationErrorMessage.CARD_CURRENCY_NOT_FOUND;
 import static com.bank.credit_bank.application.generator.constants.GeneratorApplicationErrorMessage.*;
-import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.CONSUMPTION;
 
 public class CardCreateService implements CardCreateUseCase {
 
@@ -68,8 +67,7 @@ public class CardCreateService implements CardCreateUseCase {
                 currencyResponseDto.exchangeRate(),
                 idCard,
                 cardCreateCommand.creditTotal(),
-                cardCreateCommand.paymentDay(),
-                CONSUMPTION);
+                cardCreateCommand.paymentDay());
 
         var benefit = Benefit.builder()
                 .benefitId(idBenefit)

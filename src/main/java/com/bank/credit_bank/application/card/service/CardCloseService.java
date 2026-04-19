@@ -7,7 +7,6 @@ import com.bank.credit_bank.application.card.commands.CardCloseCommand;
 import com.bank.credit_bank.application.card.port.in.CardCloseUseCase;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 
-import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.CONSUMPTION;
 
 public class CardCloseService implements CardCloseUseCase {
 
@@ -25,7 +24,7 @@ public class CardCloseService implements CardCloseUseCase {
     public CardId execute(CardCloseCommand cardCloseCommand) {
 
         var card = businessServiceCard.get(cardCloseCommand.cardId());
-        var balance = businessServiceBalance.get(cardCloseCommand.cardId(), CONSUMPTION);
+        var balance = businessServiceBalance.get(cardCloseCommand.cardId());
         var benefit = businessServiceBenefit.get(cardCloseCommand.cardId());
 
         card.close();

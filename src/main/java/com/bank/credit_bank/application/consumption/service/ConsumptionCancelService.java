@@ -5,9 +5,9 @@ import com.bank.credit_bank.application.business.card.BusinessServiceCard;
 import com.bank.credit_bank.application.business.consumption.BusinessServiceConsumption;
 import com.bank.credit_bank.application.consumption.commands.CardCancelConsumptionCommand;
 import com.bank.credit_bank.application.consumption.port.in.ConsumptionCancelUseCase;
+import com.bank.credit_bank.domain.balance.model.entities.BalanceConsumo;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
-import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.CONSUMPTION;
 
 public class ConsumptionCancelService implements ConsumptionCancelUseCase {
 
@@ -25,7 +25,7 @@ public class ConsumptionCancelService implements ConsumptionCancelUseCase {
     public ConsumptionId execute(CardCancelConsumptionCommand cardCancelConsumptionCommand) {
 
         var card = businessServiceCard.get(cardCancelConsumptionCommand.cardId());
-        var balance = businessServiceBalance.get(cardCancelConsumptionCommand.cardId(), CONSUMPTION);
+        var balance = BalanceConsumo.from(businessServiceBalance.get(cardCancelConsumptionCommand.cardId()));
         var consumption = businessServiceConsumption.get(cardCancelConsumptionCommand.cardId(),
                 cardCancelConsumptionCommand.consumptionId());
 

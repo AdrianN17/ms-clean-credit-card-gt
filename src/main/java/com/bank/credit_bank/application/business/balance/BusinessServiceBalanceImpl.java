@@ -1,5 +1,6 @@
 package com.bank.credit_bank.application.business.balance;
 
+import com.bank.credit_bank.application.balance.dto.response.BalanceResponseDto;
 import com.bank.credit_bank.application.balance.exceptions.ApplicationBalanceException;
 import com.bank.credit_bank.application.balance.mapper.MapperApplicationBalance;
 import com.bank.credit_bank.application.balance.port.out.BalanceDBFindByIdPort;
@@ -11,7 +12,6 @@ import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
 import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.domain.balance.model.entities.Balance;
 import com.bank.credit_bank.domain.balance.model.vo.BalanceId;
-import com.bank.credit_bank.domain.balance.model.enums.BalanceType;
 
 import static com.bank.credit_bank.application.balance.constants.BalanceApplicationErrorMessage.BALANCE_NOT_FOUND;
 import static com.bank.credit_bank.application.balance.constants.BalanceApplicationErrorMessage.FAILED_TO_CREATE_BALANCE;
@@ -32,7 +32,9 @@ public class BusinessServiceBalanceImpl implements BusinessServiceBalance {
                                       CardDBFindCurrencyPort cardDBFindCurrencyPort,
                                       MapperApplicationCurrency mapperApplicationCurrency,
                                       LoadCurrencyPort loadCurrencyPort,
-                                      MapperApplicationBalance mapperApplicationBalance, BalanceDBSavePort balanceDBSavePort, GenericEventPublisherPort genericEventPublisherPort) {
+                                      MapperApplicationBalance mapperApplicationBalance,
+                                      BalanceDBSavePort balanceDBSavePort,
+                                      GenericEventPublisherPort genericEventPublisherPort) {
         this.balanceDBFindByIdPort = balanceDBFindByIdPort;
         this.cardDBFindCurrencyPort = cardDBFindCurrencyPort;
         this.mapperApplicationCurrency = mapperApplicationCurrency;
@@ -43,7 +45,7 @@ public class BusinessServiceBalanceImpl implements BusinessServiceBalance {
     }
 
     @Override
-    public Balance get(Long cardId, BalanceType balanceType) {
+    public Balance get(Long cardId) {
         var cardCurrencyValue = cardDBFindCurrencyPort.load(cardId)
                 .orElseThrow(() -> new ApplicationCardException(CARD_NOT_FOUND));
 
@@ -52,16 +54,15 @@ public class BusinessServiceBalanceImpl implements BusinessServiceBalance {
 
         var cardCurrency = mapperApplicationCurrency.toDtoRequest(cardCurrencyDto);
 
-        var balanceResponseDto = balanceDBFindByIdPort
+        BalanceResponseDto dto = balanceDBFindByIdPort
                 .load(cardId, cardCurrency)
                 .orElseThrow(() -> new ApplicationBalanceException(BALANCE_NOT_FOUND));
 
-        return mapperApplicationBalance.toDomain(balanceResponseDto, balanceType);
+        return mapperApplicationBalance.toDomain(dto);
     }
 
     @Override
     public BalanceId save(Balance balance) {
-
         var balanceRequestDto = mapperApplicationBalance.toDto(balance);
 
         var id = balanceDBSavePort.save(balanceRequestDto)

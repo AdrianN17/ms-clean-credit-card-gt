@@ -23,7 +23,7 @@ import static com.bank.credit_bank.domain.base.enums.StatusEnum.ACTIVE;
 import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 
-public class BalancePago extends AggregateRoot<BalanceId> implements Balance {
+public class BalancePago extends AggregateRoot<BalanceId> implements BalanceOperable {
 
     private final CardId cardId;
     private final Amount total;
@@ -121,6 +121,22 @@ public class BalancePago extends AggregateRoot<BalanceId> implements Balance {
 
     public static BalancePagoBuilder builder() {
         return new BalancePagoBuilder();
+    }
+
+    public static BalancePago from(Balance balance) {
+        return BalancePago.builder()
+                .balanceId(balance.getId().getValue())
+                .status(balance.getStatus().getValue())
+                .createdDate(balance.getCreatedDate())
+                .updatedDate(balance.getUpdatedDate())
+                .currency(balance.getTotal().getCurrency().getCurrency().getValue(),
+                          balance.getTotal().getCurrency().getExchangeRate())
+                .cardId(balance.getCardId().getValue())
+                .total(balance.getTotal().getAmount())
+                .old(balance.getOld().getAmount())
+                .available(balance.getAvailable().getAmount())
+                .dateRange(balance.getDateRange().getStartDate(), balance.getDateRange().getEndDate())
+                .build();
     }
 
     public static class BalancePagoBuilder {

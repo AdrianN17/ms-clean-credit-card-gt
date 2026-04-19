@@ -5,12 +5,12 @@ import com.bank.credit_bank.application.business.card.BusinessServiceCard;
 import com.bank.credit_bank.application.business.consumption.BusinessServiceConsumption;
 import com.bank.credit_bank.application.consumption.commands.CardSplitConsumptionCommand;
 import com.bank.credit_bank.application.consumption.port.in.ConsumptionSplitUseCase;
+import com.bank.credit_bank.domain.balance.model.entities.BalanceConsumo;
 import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import java.util.List;
 
-import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.CONSUMPTION;
 
 public class ConsumptionSplitService implements ConsumptionSplitUseCase {
 
@@ -28,7 +28,7 @@ public class ConsumptionSplitService implements ConsumptionSplitUseCase {
     public List<ConsumptionId> execute(CardSplitConsumptionCommand cardSplitConsumptionCommand) {
 
         var card = businessServiceCard.get(cardSplitConsumptionCommand.cardId());
-        var balance = businessServiceBalance.get(cardSplitConsumptionCommand.cardId(), CONSUMPTION);
+        var balance = BalanceConsumo.from(businessServiceBalance.get(cardSplitConsumptionCommand.cardId()));
         var consumption = businessServiceConsumption.get(cardSplitConsumptionCommand.cardId(),
                 cardSplitConsumptionCommand.consumptionId());
 

@@ -5,9 +5,9 @@ import com.bank.credit_bank.application.business.card.BusinessServiceCard;
 import com.bank.credit_bank.application.business.payment.BusinessServicePayment;
 import com.bank.credit_bank.application.payment.commands.CardCancelPaymentCommand;
 import com.bank.credit_bank.application.payment.port.in.PaymentCancelUseCase;
+import com.bank.credit_bank.domain.balance.model.entities.BalancePago;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
-import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.PAYMENT;
 
 public class PaymentCancelService implements PaymentCancelUseCase {
 
@@ -25,7 +25,7 @@ public class PaymentCancelService implements PaymentCancelUseCase {
     public PaymentId execute(CardCancelPaymentCommand cardCancelPaymentCommand) {
 
         var card = businessServiceCard.get(cardCancelPaymentCommand.cardId());
-        var balance = businessServiceBalance.get(cardCancelPaymentCommand.cardId(), PAYMENT);
+        var balance = BalancePago.from(businessServiceBalance.get(cardCancelPaymentCommand.cardId()));
         var payment = businessServicePayment.get(cardCancelPaymentCommand.cardId(), cardCancelPaymentCommand.paymentId());
 
         balance.cancel(payment.getPaymentAmount());

@@ -1,8 +1,6 @@
 package com.bank.credit_bank.domain.balance.model.entities;
 
 import com.bank.credit_bank.domain.balance.events.BalanceClosedEvent;
-import com.bank.credit_bank.domain.balance.events.BalanceCreatedEvent;
-import com.bank.credit_bank.domain.balance.events.BalanceUpdatedEvent;
 import com.bank.credit_bank.domain.balance.model.exceptions.BalanceException;
 import com.bank.credit_bank.domain.balance.model.vo.BalanceId;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
@@ -12,67 +10,68 @@ import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.base.vo.DateRange;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
+import com.bank.credit_bank.domain.generic.events.DomainEvent;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
-import static com.bank.credit_bank.domain.balance.model.constants.BalanceConstant.OVERCHARGE_LIMIT;
 import static com.bank.credit_bank.domain.balance.model.constants.BalanceErrorMessage.*;
+import static com.bank.credit_bank.domain.balance.model.constants.BalanceErrorMessage.AVAILABLE_AMOUNT_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.balance.model.constants.BalanceErrorMessage.CARD_ID_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.balance.model.constants.BalanceErrorMessage.DATE_RANGE_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.balance.model.constants.BalanceErrorMessage.ID_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.balance.model.constants.BalanceErrorMessage.OLD_AMOUNT_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.balance.model.constants.BalanceErrorMessage.TOTAL_AMOUNT_CANNOT_BE_NULL;
 import static com.bank.credit_bank.domain.base.enums.StatusEnum.ACTIVE;
-import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 
-public class BalanceConsumo extends AggregateRoot<BalanceId> implements BalanceOperable {
+public class BalanceSnapshot extends AggregateRoot<BalanceId> implements Balance {
 
     private final CardId cardId;
     private final Amount total;
     private final Amount old;
+    private final Amount available;
     private final DateRange dateRange;
-    private Amount available;
 
-    protected BalanceConsumo(BalanceId id,
-                             StatusEnum status,
-                             LocalDateTime createdDate,
-                             LocalDateTime updatedDate,
-                             CardId cardId,
-                             Amount total,
-                             Amount old,
-                             DateRange dateRange,
-                             Amount available) {
+    public BalanceSnapshot(BalanceId id,
+                           StatusEnum status,
+                           LocalDateTime createdDate,
+                           LocalDateTime updatedDate,
+                           CardId cardId,
+                           Amount total,
+                           Amount old,
+                           DateRange dateRange,
+                           Amount available) {
         super(id, status, createdDate, updatedDate);
         this.cardId = cardId;
         this.total = total;
         this.old = old;
-        this.dateRange = dateRange;
         this.available = available;
-
-        addCreatedEvent();
+        this.dateRange = dateRange;
     }
 
-    @Override
-    public CardId getCardId() {
-        return this.cardId;
+    public static BalanceSnapshot of(BalanceId id, StatusEnum status,
+                                     LocalDateTime createdDate, LocalDateTime updatedDate,
+                                     CardId cardId, Amount total, Amount old,
+                                     DateRange dateRange, Amount available) {
+        return new BalanceSnapshot(id, status, createdDate, updatedDate, cardId, total, old, dateRange, available);
     }
 
-    @Override
-    public Amount getTotal() {
-        return this.total;
-    }
+    @Override public BalanceId getId()              { return (BalanceId) super.getId(); }
+    @Override public CardId getCardId()             { return cardId; }
+    @Override public Amount getTotal()              { return total; }
+    @Override public Amount getOld()                { return old; }
+    @Override public Amount getAvailable()          { return available; }
+    @Override public DateRange getDateRange()       { return dateRange; }
+    @Override public StatusEnum getStatus()         { return super.getStatus(); }
+    @Override public LocalDateTime getCreatedDate() { return super.getCreatedDate(); }
+    @Override public LocalDateTime getUpdatedDate() { return super.getUpdatedDate(); }
 
     @Override
-    public Amount getOld() {
-        return this.old;
-    }
-
-    @Override
-    public DateRange getDateRange() {
-        return this.dateRange;
-    }
-
-    @Override
-    public Amount getAvailable() {
-        return this.available;
+    public List<DomainEvent> pullDomainEvents() {
+        return super.pullDomainEvents();
     }
 
     @Override
@@ -81,55 +80,22 @@ public class BalanceConsumo extends AggregateRoot<BalanceId> implements BalanceO
         addClosedEvent();
     }
 
-    @Override
-    public Boolean isOvercharged() {
-        BigDecimal limitOvercharge = getTotal().getAmount().multiply(OVERCHARGE_LIMIT);
-        BigDecimal totalLimit = getTotal().getAmount().add(limitOvercharge);
-        return getAvailable().getAmount().compareTo(totalLimit) > 0;
-    }
-
-    @Override
-    public void apply(Amount amount) {
-        this.available = getAvailable().menos(amount);
-        isNotConditional(getAvailable().estaFaltando(getTotal()), new BalanceException(AMOUNT_EXCEED_CREDIT_LIMIT));
-        addUpdatedEvent();
-    }
-
-    @Override
-    public void cancel(Amount amount) {
-        isNotNull(amount, new BalanceException(PAYMENT_CANNOT_BE_NULL));
-        this.available = getAvailable().menos(amount);
-        addUpdatedEvent();
-    }
-
-    private void addCreatedEvent() {
-        addEvent(new BalanceCreatedEvent(
-                id.getValue(), cardId.getValue(),
-                total.getAmount(), old.getAmount(), available.getAmount(),
-                dateRange.getStartDate(), dateRange.getEndDate()
-        ));
-    }
-
-    private void addUpdatedEvent() {
-        addEvent(new BalanceUpdatedEvent(id.getValue(), cardId.getValue(), available.getAmount()));
-    }
-
     private void addClosedEvent() {
         addEvent(new BalanceClosedEvent(id.getValue()));
     }
 
-    public static BalanceConsumoBuilder builder() {
-        return new BalanceConsumoBuilder();
+    public static BalanceSnapshot.BalanceSnapshotBuilder builder() {
+        return new BalanceSnapshot.BalanceSnapshotBuilder();
     }
 
-    public static BalanceConsumo from(Balance balance) {
-        return BalanceConsumo.builder()
+    public static BalanceSnapshot from(Balance balance) {
+        return BalanceSnapshot.builder()
                 .balanceId(balance.getId().getValue())
                 .status(balance.getStatus().getValue())
                 .createdDate(balance.getCreatedDate())
                 .updatedDate(balance.getUpdatedDate())
                 .currency(balance.getTotal().getCurrency().getCurrency().getValue(),
-                          balance.getTotal().getCurrency().getExchangeRate())
+                        balance.getTotal().getCurrency().getExchangeRate())
                 .cardId(balance.getCardId().getValue())
                 .total(balance.getTotal().getAmount())
                 .old(balance.getOld().getAmount())
@@ -138,7 +104,7 @@ public class BalanceConsumo extends AggregateRoot<BalanceId> implements BalanceO
                 .build();
     }
 
-    public static class BalanceConsumoBuilder {
+    public static class BalanceSnapshotBuilder {
         private BalanceId id;
         private StatusEnum status;
         private LocalDateTime createdDate;
@@ -152,17 +118,17 @@ public class BalanceConsumo extends AggregateRoot<BalanceId> implements BalanceO
         private CurrencyEnum currencyEnum;
         private BigDecimal exchangeRate;
 
-        public BalanceConsumoBuilder balanceId(Long balanceId) {
+        public BalanceSnapshot.BalanceSnapshotBuilder balanceId(Long balanceId) {
             this.id = BalanceId.create(balanceId);
             return this;
         }
 
-        public BalanceConsumoBuilder cardId(Long cardId) {
+        public BalanceSnapshot.BalanceSnapshotBuilder cardId(Long cardId) {
             this.cardId = CardId.create(cardId);
             return this;
         }
 
-        public BalanceConsumoBuilder currency(Integer currency, BigDecimal exchangeRate) {
+        public BalanceSnapshot.BalanceSnapshotBuilder currency(Integer currency, BigDecimal exchangeRate) {
             isNotNull(currency, new BalanceException(CURRENCY_CANNOT_BE_NULL));
             isNotNull(exchangeRate, new BalanceException(EXCHANGE_RATE_CANNOT_BE_NULL));
             this.currencyEnum = CurrencyEnum.ofValue(currency).orElseThrow();
@@ -170,53 +136,53 @@ public class BalanceConsumo extends AggregateRoot<BalanceId> implements BalanceO
             return this;
         }
 
-        public BalanceConsumoBuilder total(BigDecimal total) {
+        public BalanceSnapshot.BalanceSnapshotBuilder total(BigDecimal total) {
             isNotNull(total, new BalanceException(TOTAL_AMOUNT_CANNOT_BE_NULL));
             this.total = Amount.create(Currency.create(currencyEnum, exchangeRate), total);
             return this;
         }
 
-        public BalanceConsumoBuilder old(BigDecimal old) {
+        public BalanceSnapshot.BalanceSnapshotBuilder old(BigDecimal old) {
             isNotNull(old, new BalanceException(OLD_AMOUNT_CANNOT_BE_NULL));
             this.old = Amount.create(Currency.create(currencyEnum, exchangeRate), old);
             return this;
         }
 
-        public BalanceConsumoBuilder available(BigDecimal available) {
+        public BalanceSnapshot.BalanceSnapshotBuilder available(BigDecimal available) {
             isNotNull(available, new BalanceException(AVAILABLE_AMOUNT_CANNOT_BE_NULL));
             this.available = Amount.create(Currency.create(currencyEnum, exchangeRate), available);
             return this;
         }
 
-        public BalanceConsumoBuilder dateRange(Short paymentDay) {
+        public BalanceSnapshot.BalanceSnapshotBuilder dateRange(Short paymentDay) {
             isNotNull(paymentDay, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
             this.dateRange = DateRange.create(paymentDay);
             return this;
         }
 
-        public BalanceConsumoBuilder dateRange(LocalDate startDate, LocalDate endDate) {
+        public BalanceSnapshot.BalanceSnapshotBuilder dateRange(LocalDate startDate, LocalDate endDate) {
             isNotNull(startDate, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
             isNotNull(endDate, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
             this.dateRange = DateRange.create(startDate, endDate);
             return this;
         }
 
-        public BalanceConsumoBuilder status(Integer status) {
+        public BalanceSnapshot.BalanceSnapshotBuilder status(Integer status) {
             this.status = StatusEnum.ofValue(status).orElseThrow();
             return this;
         }
 
-        public BalanceConsumoBuilder createdDate(LocalDateTime createdDate) {
+        public BalanceSnapshot.BalanceSnapshotBuilder createdDate(LocalDateTime createdDate) {
             this.createdDate = createdDate;
             return this;
         }
 
-        public BalanceConsumoBuilder updatedDate(LocalDateTime updatedDate) {
+        public BalanceSnapshot.BalanceSnapshotBuilder updatedDate(LocalDateTime updatedDate) {
             this.updatedDate = updatedDate;
             return this;
         }
 
-        public BalanceConsumo build() {
+        public BalanceSnapshot build() {
             isNotNull(id, new BalanceException(ID_CANNOT_BE_NULL));
             isNotNull(cardId, new BalanceException(CARD_ID_CANNOT_BE_NULL));
             isNotNull(total, new BalanceException(TOTAL_AMOUNT_CANNOT_BE_NULL));
@@ -228,7 +194,7 @@ public class BalanceConsumo extends AggregateRoot<BalanceId> implements BalanceO
             if (this.old == null) this.old = this.total;
             if (this.available == null) this.available = this.total;
 
-            return new BalanceConsumo(id, status, createdDate, updatedDate,
+            return new BalanceSnapshot(id, status, createdDate, updatedDate,
                     cardId, total, old, dateRange, available);
         }
     }

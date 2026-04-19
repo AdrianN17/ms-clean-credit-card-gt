@@ -1,13 +1,21 @@
 package com.bank.credit_bank.domain.balance.model.factory;
 
 import com.bank.credit_bank.domain.balance.model.entities.Balance;
-import com.bank.credit_bank.domain.balance.model.enums.BalanceType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public interface BalanceFactory {
+
+    Balance create(
+            Long id,
+            Integer currency,
+            BigDecimal exchangeRate,
+            Long cardId,
+            BigDecimal total,
+            Short paymentDay
+    );
 
     Balance create(
             Long id,
@@ -21,18 +29,6 @@ public interface BalanceFactory {
             BigDecimal old,
             BigDecimal available,
             LocalDate startDate,
-            LocalDate endDate,
-            BalanceType balanceType
+            LocalDate endDate
     );
-
-    Balance create(
-            Long id,
-            Integer currency,
-            BigDecimal exchangeRate,
-            Long cardId,
-            BigDecimal total,
-            Short paymentDay,
-            BalanceType balanceType
-    );
-
 }

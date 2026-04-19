@@ -9,11 +9,11 @@ import com.bank.credit_bank.application.consumption.exceptions.ApplicationConsum
 import com.bank.credit_bank.application.consumption.port.in.ConsumptionProcessUseCase;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
+import com.bank.credit_bank.domain.balance.model.entities.BalanceConsumo;
 import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import static com.bank.credit_bank.application.consumption.constants.ConsumptionApplicationErrorMessage.CONSUMPTION_CURRENCY_NOT_FOUND;
-import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.CONSUMPTION;
 
 public class ConsumptionProcessService implements ConsumptionProcessUseCase {
 
@@ -37,7 +37,7 @@ public class ConsumptionProcessService implements ConsumptionProcessUseCase {
     public ConsumptionId execute(CardProcessConsumptionCommand cardProcessConsumptionCommand) {
 
         var card = businessServiceCard.get(cardProcessConsumptionCommand.cardId());
-        var balance = businessServiceBalance.get(cardProcessConsumptionCommand.cardId(), CONSUMPTION);
+        var balance = BalanceConsumo.from(businessServiceBalance.get(cardProcessConsumptionCommand.cardId()));
         var benefit = businessServiceBenefit.get(cardProcessConsumptionCommand.cardId());
 
         var consumptionCurrencyDto = loadCurrencyPort.load(cardProcessConsumptionCommand.currency())

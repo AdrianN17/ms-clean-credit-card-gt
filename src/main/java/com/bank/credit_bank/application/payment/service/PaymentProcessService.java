@@ -9,7 +9,7 @@ import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
 import com.bank.credit_bank.application.payment.commands.CardProcessPaymentCommand;
 import com.bank.credit_bank.application.payment.exceptions.ApplicationPaymentException;
 import com.bank.credit_bank.application.payment.port.in.PaymentProcessUseCase;
-import com.bank.credit_bank.domain.balance.model.entities.Balance;
+import com.bank.credit_bank.domain.balance.model.entities.BalancePago;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Currency;
@@ -19,7 +19,6 @@ import com.bank.credit_bank.domain.payment.model.factory.PaymentFactory;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
 import static com.bank.credit_bank.application.payment.constants.PaymentApplicationErrorMessage.PAYMENT_CURRENCY_NOT_FOUND;
-import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.PAYMENT;
 import static java.util.Objects.isNull;
 
 public class PaymentProcessService implements PaymentProcessUseCase {
@@ -46,7 +45,7 @@ public class PaymentProcessService implements PaymentProcessUseCase {
     public PaymentId execute(CardProcessPaymentCommand cardProcessPaymentCommand) {
 
         var card = businessServiceCard.get(cardProcessPaymentCommand.cardId());
-        var balance = businessServiceBalance.get(cardProcessPaymentCommand.cardId(), PAYMENT);
+        var balance = BalancePago.from(businessServiceBalance.get(cardProcessPaymentCommand.cardId()));
 
         var paymentCurrencyDto = loadCurrencyPort.load(cardProcessPaymentCommand.currency())
                 .orElseThrow(() -> new ApplicationPaymentException(PAYMENT_CURRENCY_NOT_FOUND));
@@ -68,7 +67,7 @@ public class PaymentProcessService implements PaymentProcessUseCase {
 
     private PaymentId paymentProcessWithBenefit(CardProcessPaymentCommand cardProcessPaymentCommand,
                                                 Amount paymentAmount,
-                                                Card card, Balance balance) {
+                                                Card card, BalancePago balance) {
 
         var benefit = businessServiceBenefit.get(cardProcessPaymentCommand.cardId());
 
@@ -97,7 +96,7 @@ public class PaymentProcessService implements PaymentProcessUseCase {
 
     private PaymentId paymentProcessNoBenefit(CardProcessPaymentCommand cardProcessPaymentCommand,
                                               Amount paymentAmount,
-                                              Card card, Balance balance) {
+                                              Card card, BalancePago balance) {
 
         var payment = paymentFactory.create(
                 paymentAmount.getCurrency().getCurrency().getValue(),
