@@ -91,8 +91,8 @@ public class BalanceConsumo extends AggregateRoot<BalanceId> implements Balance 
     @Override
     public void apply(Amount amount) {
         this.available = getAvailable().menos(amount);
-        addUpdatedEvent();
         isNotConditional(getAvailable().estaFaltando(getTotal()), new BalanceException(AMOUNT_EXCEED_CREDIT_LIMIT));
+        addUpdatedEvent();
     }
 
     @Override

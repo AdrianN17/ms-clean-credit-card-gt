@@ -19,7 +19,7 @@ import com.bank.credit_bank.domain.payment.model.factory.PaymentFactory;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
 import static com.bank.credit_bank.application.payment.constants.PaymentApplicationErrorMessage.PAYMENT_CURRENCY_NOT_FOUND;
-import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.PAYMENT;
+import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.PAYMENT;
 import static java.util.Objects.isNull;
 
 public class PaymentProcessService implements PaymentProcessUseCase {

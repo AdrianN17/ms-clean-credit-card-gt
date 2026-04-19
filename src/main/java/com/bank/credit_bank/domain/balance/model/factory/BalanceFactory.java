@@ -1,7 +1,7 @@
 package com.bank.credit_bank.domain.balance.model.factory;
 
 import com.bank.credit_bank.domain.balance.model.entities.Balance;
-import com.bank.credit_bank.domain.payment.model.factory.BalanceType;
+import com.bank.credit_bank.domain.balance.model.enums.BalanceType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

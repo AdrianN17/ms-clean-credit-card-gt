@@ -5,7 +5,7 @@ import com.bank.credit_bank.application.balance.dto.response.BalanceResponseDto;
 import com.bank.credit_bank.domain.balance.model.entities.Balance;
 import com.bank.credit_bank.domain.balance.model.factory.BalanceFactory;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
-import com.bank.credit_bank.domain.payment.model.factory.BalanceType;
+import com.bank.credit_bank.domain.balance.model.enums.BalanceType;
 
 public class MapperApplicationBalanceImpl implements MapperApplicationBalance {
 

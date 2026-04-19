@@ -7,7 +7,7 @@ import com.bank.credit_bank.application.payment.commands.CardCancelPaymentComman
 import com.bank.credit_bank.application.payment.port.in.PaymentCancelUseCase;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
 
-import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.PAYMENT;
+import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.PAYMENT;
 
 public class PaymentCancelService implements PaymentCancelUseCase {
 

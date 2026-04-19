@@ -7,7 +7,7 @@ import com.bank.credit_bank.application.consumption.commands.CardCancelConsumpti
 import com.bank.credit_bank.application.consumption.port.in.ConsumptionCancelUseCase;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
-import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.CONSUMPTION;
+import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.CONSUMPTION;
 
 public class ConsumptionCancelService implements ConsumptionCancelUseCase {
 

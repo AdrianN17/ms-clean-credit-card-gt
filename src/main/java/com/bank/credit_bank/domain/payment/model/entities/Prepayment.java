@@ -106,7 +106,7 @@ public class Prepayment extends AggregateRoot<PaymentId> implements Payment {
     public void validateIfPaymentIsPossible(Amount available, Amount total, DateRange dateRange) {
 
         isNotConditional(dateRange.ensureWithinRange(paymentApprobation.getDate().toLocalDate()),
-                new BalanceException(DATE_NOT_WITHIN_RANGE));
+                new PaymentException(DATE_NOT_WITHIN_RANGE));
 
         isNotConditional(total.esIgual(getPaymentAmount()),
                 new PaymentException(PAYMENT_IT_NOT_NECCESARY));
@@ -157,8 +157,8 @@ public class Prepayment extends AggregateRoot<PaymentId> implements Payment {
 
         public PrepaymentBuilder paymentAmount(BigDecimal amount, Integer currency, BigDecimal exchangeRate) {
             isNotNull(amount, new PaymentException(PAYMENT_AMOUNT_NOT_NULL));
-            isNotNull(currency, new PaymentException(PAYMENT_CATEGORY_NOT_NULL));
-            isNotNull(exchangeRate, new PaymentException(PAYMENT_CATEGORY_NOT_NULL));
+            isNotNull(currency, new PaymentException(PAYMENT_CURRENCY_NOT_NULL));
+            isNotNull(exchangeRate, new PaymentException(PAYMENT_EXCHANGE_RATE_NOT_NULL));
             Currency cur = Currency.create(CurrencyEnum.ofValue(currency).orElseThrow(), exchangeRate);
             this.paymentAmount = Amount.create(cur, amount);
             return this;
@@ -182,7 +182,7 @@ public class Prepayment extends AggregateRoot<PaymentId> implements Payment {
 
         public PrepaymentBuilder channelPayment(Integer channelPayment) {
             this.channelPayment = ChannelPaymentEnum.ofValue(channelPayment).orElseThrow(
-                    () -> new PaymentException(CHANGE_PAYMENT_NOT_NULL));
+                    () -> new PaymentException(CHANNEL_PAYMENT_NOT_NULL));
             return this;
         }
 
@@ -204,7 +204,7 @@ public class Prepayment extends AggregateRoot<PaymentId> implements Payment {
 
             isNotNull(paymentAmount, new PaymentException(PAYMENT_AMOUNT_NOT_NULL));
             isNotNull(cardId, new PaymentException(CARD_ID_NOT_NULL));
-            isNotNull(channelPayment, new PaymentException(CHANGE_PAYMENT_NOT_NULL));
+            isNotNull(channelPayment, new PaymentException(CHANNEL_PAYMENT_NOT_NULL));
             isNotConditional(paymentAmount.estaVacio(), new PaymentException(PAYMENT_AMOUNT_NOT_ZERO));
 
             return new Prepayment(id, status, createdDate, updatedDate,

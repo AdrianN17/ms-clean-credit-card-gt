@@ -11,7 +11,7 @@ import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
 import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.domain.balance.model.entities.Balance;
 import com.bank.credit_bank.domain.balance.model.vo.BalanceId;
-import com.bank.credit_bank.domain.payment.model.factory.BalanceType;
+import com.bank.credit_bank.domain.balance.model.enums.BalanceType;
 
 import static com.bank.credit_bank.application.balance.constants.BalanceApplicationErrorMessage.BALANCE_NOT_FOUND;
 import static com.bank.credit_bank.application.balance.constants.BalanceApplicationErrorMessage.FAILED_TO_CREATE_BALANCE;

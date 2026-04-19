@@ -13,7 +13,7 @@ import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import static com.bank.credit_bank.application.consumption.constants.ConsumptionApplicationErrorMessage.CONSUMPTION_CURRENCY_NOT_FOUND;
-import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.CONSUMPTION;
+import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.CONSUMPTION;
 
 public class ConsumptionProcessService implements ConsumptionProcessUseCase {
 

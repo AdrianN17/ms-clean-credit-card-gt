@@ -10,7 +10,7 @@ import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
 import java.util.List;
 
-import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.CONSUMPTION;
+import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.CONSUMPTION;
 
 public class ConsumptionSplitService implements ConsumptionSplitUseCase {
 

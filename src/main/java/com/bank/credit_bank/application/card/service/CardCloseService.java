@@ -7,7 +7,7 @@ import com.bank.credit_bank.application.card.commands.CardCloseCommand;
 import com.bank.credit_bank.application.card.port.in.CardCloseUseCase;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 
-import static com.bank.credit_bank.domain.payment.model.factory.BalanceType.CONSUMPTION;
+import static com.bank.credit_bank.domain.balance.model.enums.BalanceType.CONSUMPTION;
 
 public class CardCloseService implements CardCloseUseCase {
 

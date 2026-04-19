@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 import static com.bank.credit_bank.domain.base.constants.ApprobationErrorMessage.APPROBATION_DATE_REQUIRED;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 
-public class Approbation {
+public final class Approbation {
     private final LocalDateTime date;
-    private LocalDateTime approbationDate;
+    private final LocalDateTime approbationDate;
 
     private Approbation(LocalDateTime date, LocalDateTime approbationDate) {
         this.date = date;
