@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 
 public record CardProcessPaymentCommand(
         BigDecimal amount,
-        Integer currency,
-        Integer category,
+        String currency,
+        String category,
         Long cardId,
-        Integer channelPayment,
+        String channelPayment,
         Integer pointsUsed
 ) {
 }

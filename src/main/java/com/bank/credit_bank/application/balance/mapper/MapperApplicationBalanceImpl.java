@@ -15,7 +15,7 @@ public class MapperApplicationBalanceImpl implements MapperApplicationBalance {
                 .status(dto.status())
                 .createdDate(dto.createdDate())
                 .updatedDate(dto.updatedDate())
-                .currency(CurrencyEnum.valueOf(dto.currency()).getValue(), dto.exchangeRate())
+                .currency(dto.currency(), dto.exchangeRate())
                 .cardId(dto.cardId())
                 .total(dto.total())
                 .old(dto.old())

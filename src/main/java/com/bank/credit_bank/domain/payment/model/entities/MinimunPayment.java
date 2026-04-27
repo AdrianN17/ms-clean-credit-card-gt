@@ -160,11 +160,11 @@ public class MinimunPayment extends AggregateRoot<PaymentId> implements Payment 
             return this;
         }
 
-        public MinimunPaymentBuilder paymentAmount(BigDecimal amount, Integer currency, BigDecimal exchangeRate) {
+        public MinimunPaymentBuilder paymentAmount(BigDecimal amount, String currency, BigDecimal exchangeRate) {
             isNotNull(amount, new PaymentException(PAYMENT_AMOUNT_NOT_NULL));
             isNotNull(currency, new PaymentException(PAYMENT_CURRENCY_NOT_NULL));
             isNotNull(exchangeRate, new PaymentException(PAYMENT_EXCHANGE_RATE_NOT_NULL));
-            Currency cur = Currency.create(CurrencyEnum.ofValue(currency).orElseThrow(), exchangeRate);
+            Currency cur = Currency.create(CurrencyEnum.ofCode(currency).orElseThrow(), exchangeRate);
             this.paymentAmount = Amount.create(cur, amount);
             return this;
         }
@@ -185,8 +185,8 @@ public class MinimunPayment extends AggregateRoot<PaymentId> implements Payment 
             return this;
         }
 
-        public MinimunPaymentBuilder channelPayment(Integer channelPayment) {
-            this.channelPayment = ChannelPaymentEnum.ofValue(channelPayment).orElseThrow(
+        public MinimunPaymentBuilder channelPayment(String channelPayment) {
+            this.channelPayment = ChannelPaymentEnum.ofCode(channelPayment).orElseThrow(
                     () -> new PaymentException(CHANNEL_PAYMENT_NOT_NULL));
             return this;
         }

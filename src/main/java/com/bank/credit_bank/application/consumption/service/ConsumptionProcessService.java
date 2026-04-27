@@ -1,14 +1,14 @@
 package com.bank.credit_bank.application.consumption.service;
 
-import com.bank.credit_bank.application.business.balance.BusinessServiceBalance;
-import com.bank.credit_bank.application.business.benefit.BusinessServiceBenefit;
-import com.bank.credit_bank.application.business.card.BusinessServiceCard;
-import com.bank.credit_bank.application.business.consumption.BusinessServiceConsumption;
+import com.bank.credit_bank.application.balance.business.BusinessServiceBalance;
+import com.bank.credit_bank.application.benefit.business.BusinessServiceBenefit;
+import com.bank.credit_bank.application.card.business.BusinessServiceCard;
+import com.bank.credit_bank.application.consumption.business.BusinessServiceConsumption;
 import com.bank.credit_bank.application.consumption.commands.CardProcessConsumptionCommand;
 import com.bank.credit_bank.application.consumption.exceptions.ApplicationConsumptionException;
 import com.bank.credit_bank.application.consumption.port.in.ConsumptionProcessUseCase;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
-import com.bank.credit_bank.application.currency.port.out.LoadCurrencyPort;
+import com.bank.credit_bank.application.currency.port.out.LoadCurrencyWSPort;
 import com.bank.credit_bank.domain.balance.model.entities.BalanceConsumo;
 import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
@@ -22,15 +22,15 @@ public class ConsumptionProcessService implements ConsumptionProcessUseCase {
     private final BusinessServiceBenefit businessServiceBenefit;
     private final BusinessServiceConsumption businessServiceConsumption;
     private final MapperApplicationCurrency mapperApplicationCurrency;
-    private final LoadCurrencyPort loadCurrencyPort;
+    private final LoadCurrencyWSPort loadCurrencyWSPort;
 
-    public ConsumptionProcessService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceBenefit businessServiceBenefit, BusinessServiceConsumption businessServiceConsumption, MapperApplicationCurrency mapperApplicationCurrency, LoadCurrencyPort loadCurrencyPort) {
+    public ConsumptionProcessService(BusinessServiceCard businessServiceCard, BusinessServiceBalance businessServiceBalance, BusinessServiceBenefit businessServiceBenefit, BusinessServiceConsumption businessServiceConsumption, MapperApplicationCurrency mapperApplicationCurrency, LoadCurrencyWSPort loadCurrencyWSPort) {
         this.businessServiceCard = businessServiceCard;
         this.businessServiceBalance = businessServiceBalance;
         this.businessServiceBenefit = businessServiceBenefit;
         this.businessServiceConsumption = businessServiceConsumption;
         this.mapperApplicationCurrency = mapperApplicationCurrency;
-        this.loadCurrencyPort = loadCurrencyPort;
+        this.loadCurrencyWSPort = loadCurrencyWSPort;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ConsumptionProcessService implements ConsumptionProcessUseCase {
         var balance = BalanceConsumo.from(businessServiceBalance.get(cardProcessConsumptionCommand.cardId()));
         var benefit = businessServiceBenefit.get(cardProcessConsumptionCommand.cardId());
 
-        var consumptionCurrencyDto = loadCurrencyPort.load(cardProcessConsumptionCommand.currency())
+        var consumptionCurrencyDto = loadCurrencyWSPort.load(cardProcessConsumptionCommand.currency())
                 .orElseThrow(() -> new ApplicationConsumptionException(CONSUMPTION_CURRENCY_NOT_FOUND));
 
         var consumptionCurrency = mapperApplicationCurrency.toDtoRequest(consumptionCurrencyDto);

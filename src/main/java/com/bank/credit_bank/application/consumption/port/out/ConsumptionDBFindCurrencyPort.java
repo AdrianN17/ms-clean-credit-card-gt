@@ -4,5 +4,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ConsumptionDBFindCurrencyPort {
-    Optional<Integer> load(UUID consumptionId, String cardId);
+    Optional<String> load(UUID consumptionId, String cardId);
 }

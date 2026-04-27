@@ -1,39 +1,36 @@
 package com.bank.credit_bank.domain.balance.model.factory;
 
+import com.bank.credit_bank.domain.balance.model.dto.CreateBalanceRequestDto;
+import com.bank.credit_bank.domain.balance.model.dto.CreateBalanceRequestFirstDto;
 import com.bank.credit_bank.domain.balance.model.entities.Balance;
 import com.bank.credit_bank.domain.balance.model.entities.BalanceSnapshot;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class BalanceFactoryImpl implements BalanceFactory {
 
     @Override
-    public Balance create(Long id, Integer currency, BigDecimal exchangeRate,
-                          Long cardId, BigDecimal total, Short paymentDay) {
+    public Balance create(CreateBalanceRequestFirstDto dto) {
         return BalanceSnapshot.builder()
-                .balanceId(id)
-                .currency(currency, exchangeRate)
-                .cardId(cardId)
-                .total(total)
-                .dateRange(paymentDay)
+                .balanceId(dto.id())
+                .currency(dto.currency(), dto.exchangeRate())
+                .cardId(dto.cardId())
+                .total(dto.total())
+                .dateRange(dto.paymentDay())
                 .build();
     }
 
     @Override
-    public Balance create(Long id, Integer status, LocalDateTime createdDate, LocalDateTime updatedDate, Integer currency, BigDecimal exchangeRate, Long cardId, BigDecimal total, BigDecimal old, BigDecimal available, LocalDate startDate, LocalDate endDate) {
+    public Balance create(CreateBalanceRequestDto dto) {
         return BalanceSnapshot.builder()
-                .balanceId(id)
-                .status(status)
-                .createdDate(createdDate)
-                .updatedDate(updatedDate)
-                .currency(currency, exchangeRate)
-                .cardId(cardId)
-                .total(total)
-                .old(old)
-                .available(available)
-                .dateRange(startDate, endDate)
+                .balanceId(dto.id())
+                .status(dto.status())
+                .createdDate(dto.createdDate())
+                .updatedDate(dto.updatedDate())
+                .currency(dto.currency(), dto.exchangeRate())
+                .cardId(dto.cardId())
+                .total(dto.total())
+                .old(dto.old())
+                .available(dto.available())
+                .dateRange(dto.startDate(), dto.endDate())
                 .build();
     }
 }

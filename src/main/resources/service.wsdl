@@ -1,0 +1,662 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://bank.com/credit_card"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             targetNamespace="http://bank.com/credit_card"
+             name="CreditCardService">
+
+    <!-- ========================== TYPES ========================== -->
+    <types>
+        <xsd:schema targetNamespace="http://bank.com/credit_card"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+            <!-- Tracking -->
+            <xsd:complexType name="Tracking">
+                <xsd:sequence>
+                    <xsd:element name="trackingId" type="xsd:string"/>
+                    <xsd:element name="operationDate" type="xsd:dateTime"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- DefaultResponse4xx -->
+            <xsd:complexType name="DefaultResponse4xx">
+                <xsd:sequence>
+                    <xsd:element name="description" type="xsd:string"/>
+                    <xsd:element name="errors" type="xsd:string" minOccurs="1" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- DefaultResponse -->
+            <xsd:complexType name="DefaultResponse">
+                <xsd:sequence>
+                    <xsd:element name="description" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- LongResponse -->
+            <xsd:complexType name="LongResponse">
+                <xsd:sequence>
+                    <xsd:element name="id" type="xsd:long"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- UUIDResponse -->
+            <xsd:complexType name="UUIDResponse">
+                <xsd:sequence>
+                    <xsd:element name="id" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- BenefitRequest -->
+            <xsd:complexType name="BenefitRequest">
+                <xsd:sequence>
+                    <xsd:element name="hasDiscount" type="xsd:boolean"/>
+                    <xsd:element name="multiplierPoints" type="xsd:decimal"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- AccountRequest -->
+            <xsd:complexType name="AccountRequest">
+                <xsd:sequence>
+                    <xsd:element name="creditTotal" type="xsd:decimal"/>
+                    <xsd:element name="debtTax" type="xsd:decimal"/>
+                    <xsd:element name="currency" type="xsd:string"/>
+                    <xsd:element name="paymentDate" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- CardRequest -->
+            <xsd:complexType name="CardRequest">
+                <xsd:sequence>
+                    <xsd:element name="typeCard" type="xsd:string"/>
+                    <xsd:element name="categoryCard" type="xsd:string"/>
+                    <xsd:element name="benefit" type="tns:BenefitRequest"/>
+                    <xsd:element name="account" type="tns:AccountRequest"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- BenefitResponse -->
+            <xsd:complexType name="BenefitResponse">
+                <xsd:sequence>
+                    <xsd:element name="hasDiscount" type="xsd:boolean"/>
+                    <xsd:element name="multiplierPoints" type="xsd:decimal"/>
+                    <xsd:element name="totalPoint" type="xsd:int"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- BalanceResponse -->
+            <xsd:complexType name="BalanceResponse">
+                <xsd:sequence>
+                    <xsd:element name="totalAmount" type="xsd:decimal"/>
+                    <xsd:element name="oldAmount" type="xsd:decimal"/>
+                    <xsd:element name="availableAmount" type="xsd:decimal"/>
+                    <xsd:element name="startDate" type="xsd:date"/>
+                    <xsd:element name="endDate" type="xsd:date"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- AccountResponse -->
+            <xsd:complexType name="AccountResponse">
+                <xsd:sequence>
+                    <xsd:element name="creditTotal" type="xsd:decimal"/>
+                    <xsd:element name="debtTax" type="xsd:decimal"/>
+                    <xsd:element name="currency" type="xsd:string"/>
+                    <xsd:element name="paymentDate" type="xsd:string"/>
+                    <xsd:element name="cardStatus" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- CardResponse -->
+            <xsd:complexType name="CardResponse">
+                <xsd:sequence>
+                    <xsd:element name="typeCard" type="xsd:string"/>
+                    <xsd:element name="categoryCard" type="xsd:string"/>
+                    <xsd:element name="benefit" type="tns:BenefitResponse"/>
+                    <xsd:element name="balance" type="tns:BalanceResponse"/>
+                    <xsd:element name="account" type="tns:AccountResponse"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- PaymentRequest -->
+            <xsd:complexType name="PaymentRequest">
+                <xsd:sequence>
+                    <xsd:element name="channel" type="xsd:string"/>
+                    <xsd:element name="currency" type="xsd:string"/>
+                    <xsd:element name="amount" type="xsd:decimal"/>
+                    <xsd:element name="category" type="xsd:string"/>
+                    <xsd:element name="pointsUsed" type="xsd:int" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- PaymentResponse -->
+            <xsd:complexType name="PaymentResponse">
+                <xsd:sequence>
+                    <xsd:element name="channel" type="xsd:string"/>
+                    <xsd:element name="currency" type="xsd:string"/>
+                    <xsd:element name="amount" type="xsd:decimal"/>
+                    <xsd:element name="category" type="xsd:string"/>
+                    <xsd:element name="paymentDate" type="xsd:dateTime"/>
+                    <xsd:element name="paymentApprobationDate" type="xsd:dateTime"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- ConsumptionRequest -->
+            <xsd:complexType name="ConsumptionRequest">
+                <xsd:sequence>
+                    <xsd:element name="sellerName" type="xsd:string"/>
+                    <xsd:element name="currency" type="xsd:string"/>
+                    <xsd:element name="amount" type="xsd:decimal"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- ConsumptionResponse -->
+            <xsd:complexType name="ConsumptionResponse">
+                <xsd:sequence>
+                    <xsd:element name="sellerName" type="xsd:string"/>
+                    <xsd:element name="currency" type="xsd:string"/>
+                    <xsd:element name="amount" type="xsd:decimal"/>
+                    <xsd:element name="consumptionDate" type="xsd:dateTime"/>
+                    <xsd:element name="consumptionApprobationDate" type="xsd:dateTime"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- UUIDResponseList -->
+            <xsd:complexType name="UUIDResponseList">
+                <xsd:sequence>
+                    <xsd:element name="item" type="tns:UUIDResponse" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- PaymentResponseList -->
+            <xsd:complexType name="PaymentResponseList">
+                <xsd:sequence>
+                    <xsd:element name="item" type="tns:PaymentResponse" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- ConsumptionResponseList -->
+            <xsd:complexType name="ConsumptionResponseList">
+                <xsd:sequence>
+                    <xsd:element name="item" type="tns:ConsumptionResponse" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <!-- ==================== REQUEST ELEMENTS ==================== -->
+
+            <!-- retrieveBalance -->
+            <xsd:element name="retrieveBalanceRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cardId" type="xsd:long"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="retrieveBalanceResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="data" type="tns:CardResponse"/>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- controlCard -->
+            <xsd:element name="controlCardRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cardId" type="xsd:long"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="controlCardResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                        <xsd:element name="data" type="tns:LongResponse"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- initiateCard -->
+            <xsd:element name="initiateCardRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="data" type="tns:CardRequest"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="initiateCardResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                        <xsd:element name="data" type="tns:LongResponse"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- initiateConsumption -->
+            <xsd:element name="initiateConsumptionRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cardId" type="xsd:long"/>
+                        <xsd:element name="data" type="tns:ConsumptionRequest"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="initiateConsumptionResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                        <xsd:element name="data" type="tns:UUIDResponse"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- initiatePayment -->
+            <xsd:element name="initiatePaymentRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cardId" type="xsd:long"/>
+                        <xsd:element name="data" type="tns:PaymentRequest"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="initiatePaymentResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                        <xsd:element name="data" type="tns:UUIDResponse"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- controlPayment -->
+            <xsd:element name="controlPaymentRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cardId" type="xsd:long"/>
+                        <xsd:element name="paymentId" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="controlPaymentResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                        <xsd:element name="data" type="tns:UUIDResponse"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- controlConsumption -->
+            <xsd:element name="controlConsumptionRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cardId" type="xsd:long"/>
+                        <xsd:element name="consumptionId" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="controlConsumptionResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                        <xsd:element name="data" type="tns:UUIDResponse"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- exchangeConsumption -->
+            <xsd:complexType name="ExchangeData">
+                <xsd:sequence>
+                    <xsd:element name="installments">
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:int">
+                                <xsd:minInclusive value="1"/>
+                                <xsd:maxInclusive value="36"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="exchangeConsumptionRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cardId" type="xsd:long"/>
+                        <xsd:element name="consumptionId" type="xsd:string"/>
+                        <xsd:element name="data" type="tns:ExchangeData"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="exchangeConsumptionResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                        <xsd:element name="data" type="tns:UUIDResponseList"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- retrievePayment -->
+            <xsd:element name="retrievePaymentRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cardId" type="xsd:long"/>
+                        <xsd:element name="dateStart" type="xsd:date"/>
+                        <xsd:element name="dateEnd" type="xsd:date"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="retrievePaymentResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                        <xsd:element name="data" type="tns:PaymentResponseList"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- retrieveConsumption -->
+            <xsd:element name="retrieveConsumptionRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cardId" type="xsd:long"/>
+                        <xsd:element name="dateStart" type="xsd:date"/>
+                        <xsd:element name="dateEnd" type="xsd:date"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="retrieveConsumptionResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tracking" type="tns:Tracking"/>
+                        <xsd:element name="data" type="tns:ConsumptionResponseList"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- Fault elements -->
+            <xsd:element name="faultBadRequest" type="tns:DefaultResponse4xx"/>
+            <xsd:element name="faultNotFound" type="tns:DefaultResponse"/>
+            <xsd:element name="faultInternalError" type="tns:DefaultResponse"/>
+
+        </xsd:schema>
+    </types>
+
+    <!-- ========================== MESSAGES ========================== -->
+
+    <message name="retrieveBalanceInput">
+        <part name="parameters" element="tns:retrieveBalanceRequest"/>
+    </message>
+    <message name="retrieveBalanceOutput">
+        <part name="parameters" element="tns:retrieveBalanceResponse"/>
+    </message>
+
+    <message name="controlCardInput">
+        <part name="parameters" element="tns:controlCardRequest"/>
+    </message>
+    <message name="controlCardOutput">
+        <part name="parameters" element="tns:controlCardResponse"/>
+    </message>
+
+    <message name="initiateCardInput">
+        <part name="parameters" element="tns:initiateCardRequest"/>
+    </message>
+    <message name="initiateCardOutput">
+        <part name="parameters" element="tns:initiateCardResponse"/>
+    </message>
+
+    <message name="initiateConsumptionInput">
+        <part name="parameters" element="tns:initiateConsumptionRequest"/>
+    </message>
+    <message name="initiateConsumptionOutput">
+        <part name="parameters" element="tns:initiateConsumptionResponse"/>
+    </message>
+
+    <message name="initiatePaymentInput">
+        <part name="parameters" element="tns:initiatePaymentRequest"/>
+    </message>
+    <message name="initiatePaymentOutput">
+        <part name="parameters" element="tns:initiatePaymentResponse"/>
+    </message>
+
+    <message name="controlPaymentInput">
+        <part name="parameters" element="tns:controlPaymentRequest"/>
+    </message>
+    <message name="controlPaymentOutput">
+        <part name="parameters" element="tns:controlPaymentResponse"/>
+    </message>
+
+    <message name="controlConsumptionInput">
+        <part name="parameters" element="tns:controlConsumptionRequest"/>
+    </message>
+    <message name="controlConsumptionOutput">
+        <part name="parameters" element="tns:controlConsumptionResponse"/>
+    </message>
+
+    <message name="exchangeConsumptionInput">
+        <part name="parameters" element="tns:exchangeConsumptionRequest"/>
+    </message>
+    <message name="exchangeConsumptionOutput">
+        <part name="parameters" element="tns:exchangeConsumptionResponse"/>
+    </message>
+
+    <message name="retrievePaymentInput">
+        <part name="parameters" element="tns:retrievePaymentRequest"/>
+    </message>
+    <message name="retrievePaymentOutput">
+        <part name="parameters" element="tns:retrievePaymentResponse"/>
+    </message>
+
+    <message name="retrieveConsumptionInput">
+        <part name="parameters" element="tns:retrieveConsumptionRequest"/>
+    </message>
+    <message name="retrieveConsumptionOutput">
+        <part name="parameters" element="tns:retrieveConsumptionResponse"/>
+    </message>
+
+    <!-- Fault messages -->
+    <message name="faultBadRequestMsg">
+        <part name="fault" element="tns:faultBadRequest"/>
+    </message>
+    <message name="faultNotFoundMsg">
+        <part name="fault" element="tns:faultNotFound"/>
+    </message>
+    <message name="faultInternalErrorMsg">
+        <part name="fault" element="tns:faultInternalError"/>
+    </message>
+
+    <!-- ========================== PORT TYPE ========================== -->
+
+    <portType name="CreditCardPortType">
+
+        <operation name="retrieveBalance">
+            <input message="tns:retrieveBalanceInput"/>
+            <output message="tns:retrieveBalanceOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+        <operation name="controlCard">
+            <input message="tns:controlCardInput"/>
+            <output message="tns:controlCardOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+        <operation name="initiateCard">
+            <input message="tns:initiateCardInput"/>
+            <output message="tns:initiateCardOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+        <operation name="initiateConsumption">
+            <input message="tns:initiateConsumptionInput"/>
+            <output message="tns:initiateConsumptionOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+        <operation name="initiatePayment">
+            <input message="tns:initiatePaymentInput"/>
+            <output message="tns:initiatePaymentOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+        <operation name="controlPayment">
+            <input message="tns:controlPaymentInput"/>
+            <output message="tns:controlPaymentOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+        <operation name="controlConsumption">
+            <input message="tns:controlConsumptionInput"/>
+            <output message="tns:controlConsumptionOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+        <operation name="exchangeConsumption">
+            <input message="tns:exchangeConsumptionInput"/>
+            <output message="tns:exchangeConsumptionOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+        <operation name="retrievePayment">
+            <input message="tns:retrievePaymentInput"/>
+            <output message="tns:retrievePaymentOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+        <operation name="retrieveConsumption">
+            <input message="tns:retrieveConsumptionInput"/>
+            <output message="tns:retrieveConsumptionOutput"/>
+            <fault name="BadRequest" message="tns:faultBadRequestMsg"/>
+            <fault name="NotFound" message="tns:faultNotFoundMsg"/>
+            <fault name="InternalError" message="tns:faultInternalErrorMsg"/>
+        </operation>
+
+    </portType>
+
+    <!-- ========================== BINDING ========================== -->
+
+    <binding name="CreditCardSoapBinding" type="tns:CreditCardPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+        <operation name="retrieveBalance">
+            <soap:operation soapAction="http://bank.com/credit_card/retrieveBalance"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+        <operation name="controlCard">
+            <soap:operation soapAction="http://bank.com/credit_card/controlCard"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+        <operation name="initiateCard">
+            <soap:operation soapAction="http://bank.com/credit_card/initiateCard"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+        <operation name="initiateConsumption">
+            <soap:operation soapAction="http://bank.com/credit_card/initiateConsumption"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+        <operation name="initiatePayment">
+            <soap:operation soapAction="http://bank.com/credit_card/initiatePayment"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+        <operation name="controlPayment">
+            <soap:operation soapAction="http://bank.com/credit_card/controlPayment"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+        <operation name="controlConsumption">
+            <soap:operation soapAction="http://bank.com/credit_card/controlConsumption"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+        <operation name="exchangeConsumption">
+            <soap:operation soapAction="http://bank.com/credit_card/exchangeConsumption"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+        <operation name="retrievePayment">
+            <soap:operation soapAction="http://bank.com/credit_card/retrievePayment"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+        <operation name="retrieveConsumption">
+            <soap:operation soapAction="http://bank.com/credit_card/retrieveConsumption"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="BadRequest"><soap:fault name="BadRequest" use="literal"/></fault>
+            <fault name="NotFound"><soap:fault name="NotFound" use="literal"/></fault>
+            <fault name="InternalError"><soap:fault name="InternalError" use="literal"/></fault>
+        </operation>
+
+    </binding>
+
+    <!-- ========================== SERVICE ========================== -->
+
+    <service name="CreditCardService">
+        <port name="CreditCardPort" binding="tns:CreditCardSoapBinding">
+            <soap:address location="http://localhost:8080/ws/CreditCardService"/>
+        </port>
+    </service>
+
+</definitions>
+

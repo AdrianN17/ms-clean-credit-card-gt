@@ -1,8 +1,8 @@
 package com.bank.credit_bank.application.payment.service;
 
-import com.bank.credit_bank.application.business.balance.BusinessServiceBalance;
-import com.bank.credit_bank.application.business.card.BusinessServiceCard;
-import com.bank.credit_bank.application.business.payment.BusinessServicePayment;
+import com.bank.credit_bank.application.balance.business.BusinessServiceBalance;
+import com.bank.credit_bank.application.card.business.BusinessServiceCard;
+import com.bank.credit_bank.application.payment.business.BusinessServicePayment;
 import com.bank.credit_bank.application.payment.commands.CardCancelPaymentCommand;
 import com.bank.credit_bank.application.payment.port.in.PaymentCancelUseCase;
 import com.bank.credit_bank.domain.balance.model.entities.BalancePago;

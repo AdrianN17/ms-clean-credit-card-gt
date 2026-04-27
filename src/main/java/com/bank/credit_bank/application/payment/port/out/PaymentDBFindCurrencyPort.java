@@ -4,5 +4,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PaymentDBFindCurrencyPort {
-    Optional<Integer> load(UUID paymentId, String cardId);
+    Optional<String> load(UUID paymentId, String cardId);
 }

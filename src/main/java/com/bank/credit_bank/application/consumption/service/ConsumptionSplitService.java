@@ -1,8 +1,8 @@
 package com.bank.credit_bank.application.consumption.service;
 
-import com.bank.credit_bank.application.business.balance.BusinessServiceBalance;
-import com.bank.credit_bank.application.business.card.BusinessServiceCard;
-import com.bank.credit_bank.application.business.consumption.BusinessServiceConsumption;
+import com.bank.credit_bank.application.balance.business.BusinessServiceBalance;
+import com.bank.credit_bank.application.card.business.BusinessServiceCard;
+import com.bank.credit_bank.application.consumption.business.BusinessServiceConsumption;
 import com.bank.credit_bank.application.consumption.commands.CardSplitConsumptionCommand;
 import com.bank.credit_bank.application.consumption.port.in.ConsumptionSplitUseCase;
 import com.bank.credit_bank.domain.balance.model.entities.BalanceConsumo;

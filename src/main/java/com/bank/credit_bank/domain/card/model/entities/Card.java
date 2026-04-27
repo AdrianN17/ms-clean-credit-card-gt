@@ -160,14 +160,14 @@ public class Card extends AggregateRoot<CardId> {
             return this;
         }
 
-        public CardBuilder typeCard(Integer typeCard) {
-            this.typeCard = TypeCardEnum.ofValue(typeCard).orElseThrow(
+        public CardBuilder typeCard(String typeCard) {
+            this.typeCard = TypeCardEnum.ofCode(typeCard).orElseThrow(
                     () -> new CardException(TYPE_CARD_CANNOT_BE_NULL));
             return this;
         }
 
-        public CardBuilder categoryCard(Integer categoryCard) {
-            this.categoryCard = CategoryCardEnum.ofValue(categoryCard).orElseThrow(
+        public CardBuilder categoryCard(String categoryCard) {
+            this.categoryCard = CategoryCardEnum.ofCode(categoryCard).orElseThrow(
                     () -> new CardException(CATEGORY_CARD_CANNOT_BE_NULL));
             return this;
         }
@@ -182,18 +182,18 @@ public class Card extends AggregateRoot<CardId> {
             return this;
         }
 
-        public CardBuilder credit(BigDecimal creditTotal, BigDecimal debtTax, Integer currency, BigDecimal exchangeRate) {
+        public CardBuilder credit(BigDecimal creditTotal, BigDecimal debtTax, String currency, BigDecimal exchangeRate) {
             isNotNull(creditTotal, new CardException(CREDIT_TOTAL_CANNOT_BE_NULL));
             isNotNull(debtTax, new CardException(DEBT_TAX_CANNOT_BE_NULL));
             isNotNull(currency, new CardException(CURRENCY_CANNOT_BE_NULL));
             isNotNull(exchangeRate, new CardException(EXCHANGE_RATE_CANNOT_BE_NULL));
-            Currency cur = Currency.create(CurrencyEnum.ofValue(currency).orElseThrow(), exchangeRate);
+            Currency cur = Currency.create(CurrencyEnum.ofCode(currency).orElseThrow(), exchangeRate);
             this.credit = Credit.create(Amount.create(cur, creditTotal), debtTax);
             return this;
         }
 
-        public CardBuilder cardStatus(Integer cardStatus) {
-            this.cardStatus = CardStatusEnum.ofValue(cardStatus).orElseThrow(
+        public CardBuilder cardStatus(String cardStatus) {
+            this.cardStatus = CardStatusEnum.ofCode(cardStatus).orElseThrow(
                     () -> new CardException(CARD_STATUS_CANNOT_BE_NULL));
             return this;
         }

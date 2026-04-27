@@ -94,7 +94,7 @@ public class BalanceSnapshot extends AggregateRoot<BalanceId> implements Balance
                 .status(balance.getStatus().getValue())
                 .createdDate(balance.getCreatedDate())
                 .updatedDate(balance.getUpdatedDate())
-                .currency(balance.getTotal().getCurrency().getCurrency().getValue(),
+                .currency(balance.getTotal().getCurrency().getCurrency().getCode(),
                         balance.getTotal().getCurrency().getExchangeRate())
                 .cardId(balance.getCardId().getValue())
                 .total(balance.getTotal().getAmount())
@@ -128,10 +128,10 @@ public class BalanceSnapshot extends AggregateRoot<BalanceId> implements Balance
             return this;
         }
 
-        public BalanceSnapshot.BalanceSnapshotBuilder currency(Integer currency, BigDecimal exchangeRate) {
+        public BalanceSnapshot.BalanceSnapshotBuilder currency(String currency, BigDecimal exchangeRate) {
             isNotNull(currency, new BalanceException(CURRENCY_CANNOT_BE_NULL));
             isNotNull(exchangeRate, new BalanceException(EXCHANGE_RATE_CANNOT_BE_NULL));
-            this.currencyEnum = CurrencyEnum.ofValue(currency).orElseThrow();
+            this.currencyEnum = CurrencyEnum.ofCode(currency).orElseThrow();
             this.exchangeRate = exchangeRate;
             return this;
         }

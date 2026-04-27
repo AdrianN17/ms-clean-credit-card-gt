@@ -146,11 +146,11 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
             return this;
         }
 
-        public ConsumptionBuilder consumptionAmount(BigDecimal amount, Integer currency, BigDecimal exchangeRate) {
+        public ConsumptionBuilder consumptionAmount(BigDecimal amount, String currency, BigDecimal exchangeRate) {
             isNotNull(amount, new ConsumptionException(CONSUMPTION_AMOUNT_CANNOT_BE_NULL));
             isNotNull(currency, new ConsumptionException(CONSUMPTION_CURRENCY_CANNOT_BE_NULL));
             isNotNull(exchangeRate, new ConsumptionException(CONSUMPTION_EXCHANGE_RATE_CANNOT_BE_NULL));
-            Currency cur = Currency.create(CurrencyEnum.ofValue(currency).orElseThrow(), exchangeRate);
+            Currency cur = Currency.create(CurrencyEnum.ofCode(currency).orElseThrow(), exchangeRate);
             this.consumptionAmount = Amount.create(cur, amount);
             return this;
         }

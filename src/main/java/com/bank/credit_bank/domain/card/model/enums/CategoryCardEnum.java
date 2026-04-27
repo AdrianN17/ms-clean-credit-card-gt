@@ -1,6 +1,7 @@
 package com.bank.credit_bank.domain.card.model.enums;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 public enum CategoryCardEnum {
@@ -32,6 +33,13 @@ public enum CategoryCardEnum {
         if (value == null) return Optional.empty();
         return Arrays.stream(values())
                 .filter(c -> c.value == value)
+                .findFirst();
+    }
+
+    public static Optional<CategoryCardEnum> ofCode(String code) {
+        if (code == null) return Optional.empty();
+        return Arrays.stream(values())
+                .filter(c -> Objects.equals(c.code, code))
                 .findFirst();
     }
 }

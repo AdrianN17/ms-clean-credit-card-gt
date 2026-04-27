@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public record CardProcessConsumptionCommand(
         BigDecimal amount,
-        Integer currency,
+        String currency,
         Long cardId,
         String sellerName) {
 }

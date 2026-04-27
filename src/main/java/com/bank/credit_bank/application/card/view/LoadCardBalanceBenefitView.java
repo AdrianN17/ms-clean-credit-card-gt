@@ -7,7 +7,7 @@ public record LoadCardBalanceBenefitView(
         String typeCard,
         String categoryCard,
         BigDecimal creditTotal,
-        Integer currency,
+        String currency,
         BigDecimal debtTax,
         String cardStatus,
         Short paymentDate,

@@ -1,8 +1,8 @@
 package com.bank.credit_bank.application.card.service;
 
-import com.bank.credit_bank.application.business.balance.BusinessServiceBalance;
-import com.bank.credit_bank.application.business.benefit.BusinessServiceBenefit;
-import com.bank.credit_bank.application.business.card.BusinessServiceCard;
+import com.bank.credit_bank.application.balance.business.BusinessServiceBalance;
+import com.bank.credit_bank.application.benefit.business.BusinessServiceBenefit;
+import com.bank.credit_bank.application.card.business.BusinessServiceCard;
 import com.bank.credit_bank.application.card.commands.CardCloseCommand;
 import com.bank.credit_bank.application.card.port.in.CardCloseUseCase;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
