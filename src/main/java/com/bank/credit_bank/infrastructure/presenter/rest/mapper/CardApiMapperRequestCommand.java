@@ -1,4 +1,4 @@
-package com.bank.credit_bank.infrastructure.presenter.rest.mapper.command;
+package com.bank.credit_bank.infrastructure.presenter.rest.mapper;
 
 import com.bank.credit_bank.application.card.commands.CardCloseCommand;
 import com.bank.credit_bank.application.card.commands.CardCreateCommand;

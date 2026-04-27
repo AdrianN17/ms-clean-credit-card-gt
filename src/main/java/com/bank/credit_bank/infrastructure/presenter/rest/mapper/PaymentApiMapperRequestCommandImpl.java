@@ -1,4 +1,4 @@
-package com.bank.credit_bank.infrastructure.presenter.rest.mapper.command;
+package com.bank.credit_bank.infrastructure.presenter.rest.mapper;
 
 import com.bank.credit_bank.application.payment.commands.CardCancelPaymentCommand;
 import com.bank.credit_bank.application.payment.commands.CardProcessPaymentCommand;
@@ -10,8 +10,8 @@ import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.bank.credit_bank.infrastructure.presenter.rest.contants.PaymentMapperCommandMessageConstants.PAYMENT_APPROBATION_DATE_NOT_NULL;
-import static com.bank.credit_bank.infrastructure.presenter.rest.contants.PaymentMapperCommandMessageConstants.PAYMENT_DATE_NOT_NULL;
+import static com.bank.credit_bank.infrastructure.presenter.soap.constants.PaymentMapperCommandMessageConstants.PAYMENT_APPROBATION_DATE_NOT_NULL;
+import static com.bank.credit_bank.infrastructure.presenter.soap.constants.PaymentMapperCommandMessageConstants.PAYMENT_DATE_NOT_NULL;
 
 public class PaymentApiMapperRequestCommandImpl implements PaymentApiMapperRequestCommand {
 

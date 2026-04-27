@@ -1,4 +1,4 @@
-package com.bank.credit_bank.infrastructure.presenter.rest.mapper.command;
+package com.bank.credit_bank.infrastructure.presenter.rest.mapper;
 
 import com.bank.credit_bank.application.payment.commands.CardCancelPaymentCommand;
 import com.bank.credit_bank.application.payment.commands.CardProcessPaymentCommand;

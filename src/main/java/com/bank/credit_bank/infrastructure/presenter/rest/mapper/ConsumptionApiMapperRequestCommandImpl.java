@@ -1,4 +1,4 @@
-package com.bank.credit_bank.infrastructure.presenter.rest.mapper.command;
+package com.bank.credit_bank.infrastructure.presenter.rest.mapper;
 
 import com.bank.credit_bank.application.consumption.commands.CardCancelConsumptionCommand;
 import com.bank.credit_bank.application.consumption.commands.CardProcessConsumptionCommand;
@@ -12,8 +12,8 @@ import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.bank.credit_bank.infrastructure.presenter.rest.contants.ConsumptionMapperCommandMessageConstants.CONSUMPTION_APPROBATION_DATE_NOT_NULL;
-import static com.bank.credit_bank.infrastructure.presenter.rest.contants.ConsumptionMapperCommandMessageConstants.CONSUMPTION_DATE_NOT_NULL;
+import static com.bank.credit_bank.infrastructure.presenter.soap.constants.ConsumptionMapperCommandMessageConstants.CONSUMPTION_APPROBATION_DATE_NOT_NULL;
+import static com.bank.credit_bank.infrastructure.presenter.soap.constants.ConsumptionMapperCommandMessageConstants.CONSUMPTION_DATE_NOT_NULL;
 
 public class ConsumptionApiMapperRequestCommandImpl implements ConsumptionApiMapperRequestCommand {
 

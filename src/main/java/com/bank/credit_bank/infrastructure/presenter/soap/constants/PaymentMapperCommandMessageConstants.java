@@ -1,4 +1,4 @@
-package com.bank.credit_bank.infrastructure.presenter.rest.contants;
+package com.bank.credit_bank.infrastructure.presenter.soap.constants;
 
 public interface PaymentMapperCommandMessageConstants {
 

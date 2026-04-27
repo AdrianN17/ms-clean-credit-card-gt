@@ -1,4 +1,4 @@
-package com.bank.credit_bank.infrastructure.presenter.rest.mapper.command;
+package com.bank.credit_bank.infrastructure.presenter.rest.mapper;
 
 import com.bank.credit_bank.application.card.commands.CardCloseCommand;
 import com.bank.credit_bank.application.card.commands.CardCreateCommand;
@@ -11,8 +11,8 @@ import com.bank.credit_bank.infrastructure.presenter.rest.schema.response.CardRe
 
 import java.util.Objects;
 
-import static com.bank.credit_bank.infrastructure.presenter.rest.contants.CardMapperCommandMessageConstants.*;
-import static com.bank.credit_bank.infrastructure.presenter.rest.contants.PaymentMapperCommandMessageConstants.PAYMENT_DATE_NOT_NULL;
+import static com.bank.credit_bank.infrastructure.presenter.soap.constants.CardMapperCommandMessageConstants.*;
+import static com.bank.credit_bank.infrastructure.presenter.soap.constants.PaymentMapperCommandMessageConstants.PAYMENT_DATE_NOT_NULL;
 
 public class CardApiMapperRequestCommandImpl implements CardApiMapperRequestCommand {
 

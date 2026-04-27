@@ -1,4 +1,4 @@
-package com.bank.credit_bank.infrastructure.presenter.rest.contants;
+package com.bank.credit_bank.infrastructure.presenter.soap.constants;
 
 public interface CardMapperCommandMessageConstants {
     String ACCOUNT_NOT_NULL = "account no puede ser nulo";
