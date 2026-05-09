@@ -1,6 +1,5 @@
 package com.bank.credit_bank.domain.balance.model.entities;
 
-import com.bank.credit_bank.domain.balance.events.BalanceClosedEvent;
 import com.bank.credit_bank.domain.balance.model.exceptions.BalanceException;
 import com.bank.credit_bank.domain.balance.model.vo.BalanceId;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
@@ -10,7 +9,6 @@ import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.base.vo.DateRange;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
-import com.bank.credit_bank.domain.generic.events.DomainEvent;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -70,18 +68,8 @@ public class BalanceSnapshot extends AggregateRoot<BalanceId> implements Balance
     @Override public LocalDateTime getUpdatedDate() { return super.getUpdatedDate(); }
 
     @Override
-    public List<DomainEvent> pullDomainEvents() {
-        return super.pullDomainEvents();
-    }
-
-    @Override
     public void close() {
         softDelete();
-        addClosedEvent();
-    }
-
-    private void addClosedEvent() {
-        addEvent(new BalanceClosedEvent(id.getValue()));
     }
 
     public static BalanceSnapshot.BalanceSnapshotBuilder builder() {

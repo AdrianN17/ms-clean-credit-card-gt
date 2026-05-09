@@ -7,7 +7,6 @@ import com.bank.credit_bank.application.card.port.out.CardDBSavePort;
 import com.bank.credit_bank.application.card.port.out.CardFindByIdPort;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyWSPort;
-import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.domain.card.model.entities.Card;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 
@@ -21,17 +20,20 @@ public class BusinessServiceCardImpl implements BusinessServiceCard {
     private final MapperApplicationCurrency mapperApplicationCurrency;
     private final LoadCurrencyWSPort loadCurrencyWSPort;
     private final CardDBSavePort cardDBSavePort;
-    private final GenericEventPublisherPort genericEventPublisherPort;
 
 
-    public BusinessServiceCardImpl(CardFindByIdPort cardFindByIdPort, CardDBFindCurrencyPort cardDBFindCurrencyPort, MapperApplicationCard mapperApplicationCard, MapperApplicationCurrency mapperApplicationCurrency, LoadCurrencyWSPort loadCurrencyWSPort, CardDBSavePort cardDBSavePort, GenericEventPublisherPort genericEventPublisherPort) {
+    public BusinessServiceCardImpl(CardFindByIdPort cardFindByIdPort,
+                                   CardDBFindCurrencyPort cardDBFindCurrencyPort,
+                                   MapperApplicationCard mapperApplicationCard,
+                                   MapperApplicationCurrency mapperApplicationCurrency,
+                                   LoadCurrencyWSPort loadCurrencyWSPort,
+                                   CardDBSavePort cardDBSavePort) {
         this.cardFindByIdPort = cardFindByIdPort;
         this.cardDBFindCurrencyPort = cardDBFindCurrencyPort;
         this.mapperApplicationCard = mapperApplicationCard;
         this.mapperApplicationCurrency = mapperApplicationCurrency;
         this.loadCurrencyWSPort = loadCurrencyWSPort;
         this.cardDBSavePort = cardDBSavePort;
-        this.genericEventPublisherPort = genericEventPublisherPort;
     }
 
     @Override
@@ -55,11 +57,7 @@ public class BusinessServiceCardImpl implements BusinessServiceCard {
     public CardId save(Card card) {
         var cardRequestDto = mapperApplicationCard.toDto(card);
 
-        var id = cardDBSavePort.save(cardRequestDto)
+        return cardDBSavePort.save(cardRequestDto)
                 .orElseThrow(() -> new ApplicationCardException(FAILED_TO_CREATE_CARD));
-
-        card.pullDomainEvents().forEach(genericEventPublisherPort::publish);
-
-        return id;
     }
 }

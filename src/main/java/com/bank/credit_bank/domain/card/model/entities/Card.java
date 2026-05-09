@@ -4,9 +4,6 @@ import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Currency;
-import com.bank.credit_bank.domain.card.events.CardClosedEvent;
-import com.bank.credit_bank.domain.card.events.CardCreatedEvent;
-import com.bank.credit_bank.domain.card.events.CardUpdatedEvent;
 import com.bank.credit_bank.domain.card.model.enums.CardStatusEnum;
 import com.bank.credit_bank.domain.card.model.enums.CategoryCardEnum;
 import com.bank.credit_bank.domain.card.model.enums.TypeCardEnum;
@@ -46,8 +43,6 @@ public class Card extends AggregateRoot<CardId> {
         this.cardAccountId = builder.cardAccountId;
         this.paymentDay = builder.paymentDay;
         this.cardStatus = builder.cardStatus;
-
-        addCreatedEvent();
     }
 
     public TypeCardEnum getTypeCard() {
@@ -79,8 +74,6 @@ public class Card extends AggregateRoot<CardId> {
             this.cardStatus = CardStatusEnum.OVERCHARGE;
         else
             this.cardStatus = OPERATIVE;
-
-        addUpdatedEvent();
     }
 
     public void validateIfCardIfInDebt() {
@@ -101,41 +94,6 @@ public class Card extends AggregateRoot<CardId> {
 
     public void close() {
         softDelete();
-        addClosedEvent();
-    }
-
-    private void addCreatedEvent() {
-        addEvent(
-                new CardCreatedEvent(
-                        getId().getValue(),
-                        typeCard.getValue(),
-                        categoryCard.getValue(),
-                        cardAccountId.getValue(),
-                        paymentDay.getValue(),
-                        credit.getCreditTotal().getAmount(),
-                        credit.getDebtTax(),
-                        credit.getCreditTotal().getCurrency().getCurrency().getValue(),
-                        credit.getCreditTotal().getCurrency().getExchangeRate(),
-                        cardStatus.getValue()
-                )
-        );
-    }
-
-    private void addUpdatedEvent() {
-        addEvent(
-                new CardUpdatedEvent(
-                        getId().getValue(),
-                        cardStatus.getValue()
-                )
-        );
-    }
-
-    private void addClosedEvent() {
-        addEvent(
-                new CardClosedEvent(
-                        getId().getValue()
-                )
-        );
     }
 
     public static CardBuilder builder() {

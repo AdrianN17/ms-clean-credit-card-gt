@@ -7,7 +7,6 @@ import com.bank.credit_bank.application.consumption.port.out.ConsumptionDBSavePo
 import com.bank.credit_bank.application.consumption.port.out.ConsumptionFindByIdPort;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyWSPort;
-import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.domain.consumption.model.entities.Consumption;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 
@@ -23,16 +22,19 @@ public class BusinessServiceConsumptionImpl implements BusinessServiceConsumptio
     private final MapperApplicationCurrency mapperApplicationCurrency;
     private final MapperApplicationConsumption mapperApplicationConsumption;
     private final ConsumptionDBSavePort consumptionDBSavePort;
-    private final GenericEventPublisherPort genericEventPublisherPort;
 
-    public BusinessServiceConsumptionImpl(ConsumptionFindByIdPort consumptionFindByIdPort, ConsumptionDBFindCurrencyPort consumptionDBFindCurrencyPort, LoadCurrencyWSPort loadCurrencyWSPort, MapperApplicationCurrency mapperApplicationCurrency, MapperApplicationConsumption mapperApplicationConsumption, ConsumptionDBSavePort consumptionDBSavePort, GenericEventPublisherPort genericEventPublisherPort) {
+    public BusinessServiceConsumptionImpl(ConsumptionFindByIdPort consumptionFindByIdPort,
+                                          ConsumptionDBFindCurrencyPort consumptionDBFindCurrencyPort,
+                                          LoadCurrencyWSPort loadCurrencyWSPort,
+                                          MapperApplicationCurrency mapperApplicationCurrency,
+                                          MapperApplicationConsumption mapperApplicationConsumption,
+                                          ConsumptionDBSavePort consumptionDBSavePort) {
         this.consumptionFindByIdPort = consumptionFindByIdPort;
         this.consumptionDBFindCurrencyPort = consumptionDBFindCurrencyPort;
         this.loadCurrencyWSPort = loadCurrencyWSPort;
         this.mapperApplicationCurrency = mapperApplicationCurrency;
         this.mapperApplicationConsumption = mapperApplicationConsumption;
         this.consumptionDBSavePort = consumptionDBSavePort;
-        this.genericEventPublisherPort = genericEventPublisherPort;
     }
 
     @Override
@@ -57,11 +59,7 @@ public class BusinessServiceConsumptionImpl implements BusinessServiceConsumptio
     public ConsumptionId save(Consumption consumption) {
         var consumptionRequestDto = mapperApplicationConsumption.toDto(consumption);
 
-        var id = this.consumptionDBSavePort.save(consumptionRequestDto).orElseThrow(() ->
+        return this.consumptionDBSavePort.save(consumptionRequestDto).orElseThrow(() ->
                 new ApplicationConsumptionException(FAILED_TO_CREATE_CONSUMPTION));
-
-        consumption.pullDomainEvents().forEach(genericEventPublisherPort::publish);
-
-        return id;
     }
 }

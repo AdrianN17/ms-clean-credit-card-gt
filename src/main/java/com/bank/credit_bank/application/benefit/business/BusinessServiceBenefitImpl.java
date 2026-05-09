@@ -4,7 +4,6 @@ import com.bank.credit_bank.application.benefit.exceptions.ApplicationBenefitExc
 import com.bank.credit_bank.application.benefit.mapper.MapperApplicationBenefit;
 import com.bank.credit_bank.application.benefit.port.out.BenefitDBFindByIdPort;
 import com.bank.credit_bank.application.benefit.port.out.BenefitDBSavePort;
-import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.domain.benefit.model.entities.Benefit;
 import com.bank.credit_bank.domain.benefit.model.vo.BenefitId;
 
@@ -16,13 +15,13 @@ public class BusinessServiceBenefitImpl implements BusinessServiceBenefit {
     private final MapperApplicationBenefit mapperApplicationBenefit;
     private final BenefitDBFindByIdPort benefitDBFindByIdPort;
     private final BenefitDBSavePort benefitDBSavePort;
-    private final GenericEventPublisherPort genericEventPublisherPort;
 
-    public BusinessServiceBenefitImpl(MapperApplicationBenefit mapperApplicationBenefit, BenefitDBFindByIdPort benefitDBFindByIdPort, BenefitDBSavePort benefitDBSavePort, GenericEventPublisherPort genericEventPublisherPort) {
+    public BusinessServiceBenefitImpl(MapperApplicationBenefit mapperApplicationBenefit,
+                                      BenefitDBFindByIdPort benefitDBFindByIdPort,
+                                      BenefitDBSavePort benefitDBSavePort) {
         this.mapperApplicationBenefit = mapperApplicationBenefit;
         this.benefitDBFindByIdPort = benefitDBFindByIdPort;
         this.benefitDBSavePort = benefitDBSavePort;
-        this.genericEventPublisherPort = genericEventPublisherPort;
     }
 
 
@@ -39,11 +38,7 @@ public class BusinessServiceBenefitImpl implements BusinessServiceBenefit {
     public BenefitId save(Benefit benefit) {
         var benefitRequestDto = mapperApplicationBenefit.toDto(benefit);
 
-        var id = benefitDBSavePort.save(benefitRequestDto)
+        return this.benefitDBSavePort.save(benefitRequestDto)
                 .orElseThrow(() -> new ApplicationBenefitException(FAILED_TO_CREATE_BENEFIT));
-
-        benefit.pullDomainEvents().forEach(genericEventPublisherPort::publish);
-
-        return id;
     }
 }

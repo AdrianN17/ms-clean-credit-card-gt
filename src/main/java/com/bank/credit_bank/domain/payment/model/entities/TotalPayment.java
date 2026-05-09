@@ -10,8 +10,6 @@ import com.bank.credit_bank.domain.base.vo.DateRange;
 import com.bank.credit_bank.domain.card.model.enums.CategoryPaymentEnum;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
 import com.bank.credit_bank.domain.generic.aggregate.AggregateRoot;
-import com.bank.credit_bank.domain.payment.events.PaymentClosedEvent;
-import com.bank.credit_bank.domain.payment.events.PaymentCreatedEvent;
 import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
 import com.bank.credit_bank.domain.payment.model.exceptions.PaymentException;
 import com.bank.credit_bank.domain.payment.model.vo.PaymentId;
@@ -55,8 +53,6 @@ public class TotalPayment extends AggregateRoot<PaymentId> implements Payment {
         this.category = category;
         this.cardId = cardId;
         this.channelPayment = channelPayment;
-
-        addCreatedEvent();
     }
 
     @Override
@@ -90,21 +86,6 @@ public class TotalPayment extends AggregateRoot<PaymentId> implements Payment {
                 new PaymentException(PAYMENT_IS_STILL_IN_APPROBATION));
 
         softDelete();
-        addClosedEvent();
-    }
-
-
-    private void addCreatedEvent() {
-        addEvent(new PaymentCreatedEvent(
-                id.getValue(),
-                cardId.getValue(),
-                paymentAmount.getAmount(),
-                paymentAmount.getCurrency().getCurrency().getValue(),
-                paymentAmount.getCurrency().getExchangeRate(),
-                category.getValue(),
-                channelPayment.getValue(),
-                paymentApprobation.getDate()
-        ));
     }
 
     @Override
@@ -115,10 +96,6 @@ public class TotalPayment extends AggregateRoot<PaymentId> implements Payment {
 
         isNotConditional(!total.esIgual(available.mas(getPaymentAmount())),
                 new PaymentException(TOTAL_PAYMENT_MUST_BE_COMPLETED));
-    }
-
-    private void addClosedEvent() {
-        addEvent(new PaymentClosedEvent(id.getValue()));
     }
 
     public static TotalPaymentBuilder builder() {

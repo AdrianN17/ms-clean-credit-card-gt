@@ -9,7 +9,6 @@ import com.bank.credit_bank.application.card.exceptions.ApplicationCardException
 import com.bank.credit_bank.application.card.port.out.CardDBFindCurrencyPort;
 import com.bank.credit_bank.application.currency.mapper.MapperApplicationCurrency;
 import com.bank.credit_bank.application.currency.port.out.LoadCurrencyWSPort;
-import com.bank.credit_bank.application.generator.port.out.GenericEventPublisherPort;
 import com.bank.credit_bank.domain.balance.model.entities.Balance;
 import com.bank.credit_bank.domain.balance.model.vo.BalanceId;
 
@@ -26,22 +25,19 @@ public class BusinessServiceBalanceImpl implements BusinessServiceBalance {
     private final LoadCurrencyWSPort loadCurrencyWSPort;
     private final MapperApplicationBalance mapperApplicationBalance;
     private final BalanceDBSavePort balanceDBSavePort;
-    private final GenericEventPublisherPort genericEventPublisherPort;
 
     public BusinessServiceBalanceImpl(BalanceDBFindByIdPort balanceDBFindByIdPort,
                                       CardDBFindCurrencyPort cardDBFindCurrencyPort,
                                       MapperApplicationCurrency mapperApplicationCurrency,
                                       LoadCurrencyWSPort loadCurrencyWSPort,
                                       MapperApplicationBalance mapperApplicationBalance,
-                                      BalanceDBSavePort balanceDBSavePort,
-                                      GenericEventPublisherPort genericEventPublisherPort) {
+                                      BalanceDBSavePort balanceDBSavePort) {
         this.balanceDBFindByIdPort = balanceDBFindByIdPort;
         this.cardDBFindCurrencyPort = cardDBFindCurrencyPort;
         this.mapperApplicationCurrency = mapperApplicationCurrency;
         this.loadCurrencyWSPort = loadCurrencyWSPort;
         this.mapperApplicationBalance = mapperApplicationBalance;
         this.balanceDBSavePort = balanceDBSavePort;
-        this.genericEventPublisherPort = genericEventPublisherPort;
     }
 
     @Override
@@ -65,11 +61,7 @@ public class BusinessServiceBalanceImpl implements BusinessServiceBalance {
     public BalanceId save(Balance balance) {
         var balanceRequestDto = mapperApplicationBalance.toDto(balance);
 
-        var id = balanceDBSavePort.save(balanceRequestDto)
+        return balanceDBSavePort.save(balanceRequestDto)
                 .orElseThrow(() -> new ApplicationBalanceException(FAILED_TO_CREATE_BALANCE));
-
-        balance.pullDomainEvents().forEach(genericEventPublisherPort::publish);
-
-        return id;
     }
 }

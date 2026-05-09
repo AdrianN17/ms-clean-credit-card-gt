@@ -2,9 +2,6 @@ package com.bank.credit_bank.domain.benefit.model.entities;
 
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.domain.base.vo.Amount;
-import com.bank.credit_bank.domain.benefit.events.BenefitClosedEvent;
-import com.bank.credit_bank.domain.benefit.events.BenefitCreatedEvent;
-import com.bank.credit_bank.domain.benefit.events.BenefitUpdatedEvent;
 import com.bank.credit_bank.domain.benefit.model.exceptions.BenefitException;
 import com.bank.credit_bank.domain.benefit.model.vo.BenefitId;
 import com.bank.credit_bank.domain.benefit.model.vo.DiscountPolicy;
@@ -32,7 +29,6 @@ public class Benefit extends AggregateRoot<BenefitId> {
         this.totalPoints = builder.totalPoints;
         this.discountPolicy = builder.discountPolicy;
         this.cardId = builder.cardId;
-        addCreatedEvent();
     }
 
     public Point getTotalPoints() {
@@ -49,7 +45,6 @@ public class Benefit extends AggregateRoot<BenefitId> {
 
     public void close() {
         softDelete();
-        addClosedEvent();
     }
 
     public void accumulate(Amount amount, BigDecimal ratio) {
@@ -60,8 +55,6 @@ public class Benefit extends AggregateRoot<BenefitId> {
 
         this.totalPoints = getTotalPoints()
                 .earnPoints(Point.create(pointEarned));
-
-        addUpdatedEvent();
     }
 
     public Amount discount(Amount amount, Point usedPoints) {
@@ -79,35 +72,7 @@ public class Benefit extends AggregateRoot<BenefitId> {
 
         this.totalPoints = getTotalPoints().dismissPoints(calculatePoints);
 
-        addUpdatedEvent();
-
         return amount.descuento(discount);
-    }
-
-    private void addCreatedEvent() {
-        addEvent(new BenefitCreatedEvent(
-                id.getValue(),
-                cardId.getValue(),
-                totalPoints.getPointEarned(),
-                discountPolicy.getHasDiscount(),
-                discountPolicy.getMultiplierPoints()
-        ));
-    }
-
-    private void addUpdatedEvent() {
-        addEvent(new BenefitUpdatedEvent(
-                id.getValue(),
-                cardId.getValue(),
-                totalPoints.getPointEarned(),
-                discountPolicy.getHasDiscount(),
-                discountPolicy.getMultiplierPoints()
-        ));
-    }
-
-    private void addClosedEvent() {
-        addEvent(new BenefitClosedEvent(
-                id.getValue()
-        ));
     }
 
     public static BenefitBuilder builder() {

@@ -6,8 +6,6 @@ import com.bank.credit_bank.domain.base.vo.Amount;
 import com.bank.credit_bank.domain.base.vo.Approbation;
 import com.bank.credit_bank.domain.base.vo.Currency;
 import com.bank.credit_bank.domain.card.model.vo.cardId.CardId;
-import com.bank.credit_bank.domain.consumption.events.ConsumptionClosedEvent;
-import com.bank.credit_bank.domain.consumption.events.ConsumptionCreatedEvent;
 import com.bank.credit_bank.domain.consumption.model.exceptions.ConsumptionException;
 import com.bank.credit_bank.domain.consumption.model.vo.ConsumptionId;
 import com.bank.credit_bank.domain.consumption.model.vo.SellerName;
@@ -38,7 +36,6 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
         this.consumptionApprobation = builder.consumptionApprobation;
         this.cardId = builder.cardId;
         this.sellerName = builder.sellerName;
-        addCreatedEvent();
     }
 
     public Amount getConsumptionAmount() {
@@ -62,23 +59,6 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
                 new ConsumptionException(CONSUMPTION_IS_STILL_IN_APPROBATION));
 
         softDelete();
-        addClosedEvent();
-    }
-
-    private void addCreatedEvent() {
-        addEvent(new ConsumptionCreatedEvent(
-                id.getValue(),
-                cardId.getValue(),
-                consumptionAmount.getAmount(),
-                consumptionAmount.getCurrency().getCurrency().getValue(),
-                consumptionAmount.getCurrency().getExchangeRate(),
-                sellerName.getValue(),
-                consumptionApprobation.getDate()
-        ));
-    }
-
-    private void addClosedEvent() {
-        addEvent(new ConsumptionClosedEvent(id.getValue()));
     }
 
     private String getSplitSellerName(int count) {

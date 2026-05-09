@@ -1,8 +1,5 @@
 package com.bank.credit_bank.domain.balance.model.entities;
 
-import com.bank.credit_bank.domain.balance.events.BalanceClosedEvent;
-import com.bank.credit_bank.domain.balance.events.BalanceCreatedEvent;
-import com.bank.credit_bank.domain.balance.events.BalanceUpdatedEvent;
 import com.bank.credit_bank.domain.balance.model.exceptions.BalanceException;
 import com.bank.credit_bank.domain.balance.model.vo.BalanceId;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
@@ -46,8 +43,6 @@ public class BalanceConsumo extends AggregateRoot<BalanceId> implements BalanceO
         this.old = old;
         this.dateRange = dateRange;
         this.available = available;
-
-        addCreatedEvent();
     }
 
     @Override
@@ -78,7 +73,6 @@ public class BalanceConsumo extends AggregateRoot<BalanceId> implements BalanceO
     @Override
     public void close() {
         softDelete();
-        addClosedEvent();
     }
 
     @Override
@@ -92,30 +86,12 @@ public class BalanceConsumo extends AggregateRoot<BalanceId> implements BalanceO
     public void apply(Amount amount) {
         this.available = getAvailable().menos(amount);
         isNotConditional(getAvailable().estaFaltando(getTotal()), new BalanceException(AMOUNT_EXCEED_CREDIT_LIMIT));
-        addUpdatedEvent();
     }
 
     @Override
     public void cancel(Amount amount) {
         isNotNull(amount, new BalanceException(PAYMENT_CANNOT_BE_NULL));
         this.available = getAvailable().menos(amount);
-        addUpdatedEvent();
-    }
-
-    private void addCreatedEvent() {
-        addEvent(new BalanceCreatedEvent(
-                id.getValue(), cardId.getValue(),
-                total.getAmount(), old.getAmount(), available.getAmount(),
-                dateRange.getStartDate(), dateRange.getEndDate()
-        ));
-    }
-
-    private void addUpdatedEvent() {
-        addEvent(new BalanceUpdatedEvent(id.getValue(), cardId.getValue(), available.getAmount()));
-    }
-
-    private void addClosedEvent() {
-        addEvent(new BalanceClosedEvent(id.getValue()));
     }
 
     public static BalanceConsumoBuilder builder() {

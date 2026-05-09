@@ -1,8 +1,5 @@
 package com.bank.credit_bank.domain.balance.model.entities;
 
-import com.bank.credit_bank.domain.balance.events.BalanceClosedEvent;
-import com.bank.credit_bank.domain.balance.events.BalanceCreatedEvent;
-import com.bank.credit_bank.domain.balance.events.BalanceUpdatedEvent;
 import com.bank.credit_bank.domain.balance.model.exceptions.BalanceException;
 import com.bank.credit_bank.domain.balance.model.vo.BalanceId;
 import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
@@ -46,7 +43,6 @@ public class BalancePago extends AggregateRoot<BalanceId> implements BalanceOper
         this.old = old;
         this.dateRange = dateRange;
         this.available = available;
-        addCreatedEvent();
     }
 
     @Override
@@ -77,7 +73,6 @@ public class BalancePago extends AggregateRoot<BalanceId> implements BalanceOper
     @Override
     public void close() {
         softDelete();
-        addClosedEvent();
     }
 
     @Override
@@ -91,7 +86,6 @@ public class BalancePago extends AggregateRoot<BalanceId> implements BalanceOper
     public void apply(Amount amount) {
         isNotNull(amount, new BalanceException(PAYMENT_CANNOT_BE_NULL));
         this.available = getAvailable().mas(amount);
-        addUpdatedEvent();
         isNotConditional(getAvailable().estaSobrando(getTotal()),
                 new BalanceException(PAYMENT_CATEGORY_EXCEED_LIKE + getAvailable().menos(getTotal()).toString()));
     }
@@ -100,23 +94,6 @@ public class BalancePago extends AggregateRoot<BalanceId> implements BalanceOper
     public void cancel(Amount amount) {
         isNotNull(amount, new BalanceException(PAYMENT_CANNOT_BE_NULL));
         this.available = getAvailable().menos(amount);
-        addUpdatedEvent();
-    }
-
-    private void addCreatedEvent() {
-        addEvent(new BalanceCreatedEvent(
-                id.getValue(), cardId.getValue(),
-                total.getAmount(), old.getAmount(), available.getAmount(),
-                dateRange.getStartDate(), dateRange.getEndDate()
-        ));
-    }
-
-    private void addUpdatedEvent() {
-        addEvent(new BalanceUpdatedEvent(id.getValue(), cardId.getValue(), available.getAmount()));
-    }
-
-    private void addClosedEvent() {
-        addEvent(new BalanceClosedEvent(id.getValue()));
     }
 
     public static BalancePagoBuilder builder() {
