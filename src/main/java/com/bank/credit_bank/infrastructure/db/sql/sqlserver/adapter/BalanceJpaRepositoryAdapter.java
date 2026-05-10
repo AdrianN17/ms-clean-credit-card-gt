@@ -24,7 +24,9 @@ public class BalanceJpaRepositoryAdapter implements BalanceDBSavePort, BalanceDB
     private final BalanceVOJpaRepository balanceVOJpaRepository;
     private final BalancePersistanceMapper balancePersistenceMapper;
 
-    public BalanceJpaRepositoryAdapter(BalanceJpaRepository balanceJpaRepository, BalanceVOJpaRepository balanceVOJpaRepository, BalancePersistanceMapper balancePersistenceMapper) {
+    public BalanceJpaRepositoryAdapter(BalanceJpaRepository balanceJpaRepository,
+                                       BalanceVOJpaRepository balanceVOJpaRepository,
+                                       BalancePersistanceMapper balancePersistenceMapper) {
         this.balanceJpaRepository = balanceJpaRepository;
         this.balanceVOJpaRepository = balanceVOJpaRepository;
         this.balancePersistenceMapper = balancePersistenceMapper;

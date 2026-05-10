@@ -4,11 +4,13 @@ import com.bank.credit_bank.infrastructure.presenter.soap.delegate.CreditCardDel
 import com.bank.credit_bank.infrastructure.presenter.soap.schema.request.*;
 import com.bank.credit_bank.infrastructure.presenter.soap.schema.response.*;
 import jakarta.jws.WebService;
+import org.springframework.context.annotation.Profile;
 
 @WebService(serviceName = "CreditCardService",
         portName = "CreditCardPort",
         targetNamespace = "http://bank.com/credit_card",
         endpointInterface = "com.bank.credit_bank.infrastructure.presenter.soap.controller.CreditCardControllerSOAP")
+@Profile("old")
 public class CreditCardControllerSOAPImpl implements CreditCardControllerSOAP {
 
     private final CreditCardDelegateSOAP creditCardDelegateSOAP;

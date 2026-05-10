@@ -1,4 +1,4 @@
-package com.bank.credit_bank.domain.consumption.model.Constants;
+package com.bank.credit_bank.domain.consumption.model.constants;
 
 public interface SellerNameErrorMessage {
     String SELLER_NAME_CANNOT_BE_NULL = "The seller name cannot be null";

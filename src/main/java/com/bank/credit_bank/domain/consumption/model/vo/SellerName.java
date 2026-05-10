@@ -2,8 +2,8 @@ package com.bank.credit_bank.domain.consumption.model.vo;
 
 import com.bank.credit_bank.domain.consumption.model.exceptions.SellerNameException;
 
-import static com.bank.credit_bank.domain.consumption.model.Constants.SellerNameErrorMessage.SELLER_NAME_CANNOT_BE_EMPTY;
-import static com.bank.credit_bank.domain.consumption.model.Constants.SellerNameErrorMessage.SELLER_NAME_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.consumption.model.constants.SellerNameErrorMessage.SELLER_NAME_CANNOT_BE_EMPTY;
+import static com.bank.credit_bank.domain.consumption.model.constants.SellerNameErrorMessage.SELLER_NAME_CANNOT_BE_NULL;
 import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 

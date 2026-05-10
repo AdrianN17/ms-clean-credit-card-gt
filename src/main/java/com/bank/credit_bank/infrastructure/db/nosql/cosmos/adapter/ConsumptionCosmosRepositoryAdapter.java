@@ -30,7 +30,9 @@ public class ConsumptionCosmosRepositoryAdapter implements ConsumptionDBFindCurr
     private final ConsumptionPersistanceMapperCosmos consumptionPersistanceMapperCosmos;
     private final ConsumptionQueryMapperCosmos consumptionQueryMapperCosmos;
 
-    public ConsumptionCosmosRepositoryAdapter(ConsumptionCosmosRepository consumptionCosmosRepository, ConsumptionPersistanceMapperCosmos consumptionPersistanceMapperCosmos, ConsumptionQueryMapperCosmos consumptionQueryMapperCosmos) {
+    public ConsumptionCosmosRepositoryAdapter(ConsumptionCosmosRepository consumptionCosmosRepository,
+                                              ConsumptionPersistanceMapperCosmos consumptionPersistanceMapperCosmos,
+                                              ConsumptionQueryMapperCosmos consumptionQueryMapperCosmos) {
         this.consumptionCosmosRepository = consumptionCosmosRepository;
         this.consumptionPersistanceMapperCosmos = consumptionPersistanceMapperCosmos;
         this.consumptionQueryMapperCosmos = consumptionQueryMapperCosmos;

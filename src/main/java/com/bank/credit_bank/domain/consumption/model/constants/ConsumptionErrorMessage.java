@@ -1,4 +1,4 @@
-package com.bank.credit_bank.domain.consumption.model.Constants;
+package com.bank.credit_bank.domain.consumption.model.constants;
 
 public interface ConsumptionErrorMessage {
     String CONSUMPTION_AMOUNT_CANNOT_BE_NULL = "The consumption amount cannot be null.";

@@ -1,4 +1,4 @@
-package com.bank.credit_bank.infrastructure.ws.config;
+package com.bank.credit_bank.infrastructure.config.commons;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

@@ -18,8 +18,8 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static com.bank.credit_bank.domain.base.enums.StatusEnum.ACTIVE;
-import static com.bank.credit_bank.domain.consumption.model.Constants.ConsumptionConstant.CONSUMPTION_SPLIT;
-import static com.bank.credit_bank.domain.consumption.model.Constants.ConsumptionErrorMessage.*;
+import static com.bank.credit_bank.domain.consumption.model.constants.ConsumptionConstant.CONSUMPTION_SPLIT;
+import static com.bank.credit_bank.domain.consumption.model.constants.ConsumptionErrorMessage.*;
 import static com.bank.credit_bank.domain.util.Validation.isNotConditional;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 import static java.util.Objects.isNull;

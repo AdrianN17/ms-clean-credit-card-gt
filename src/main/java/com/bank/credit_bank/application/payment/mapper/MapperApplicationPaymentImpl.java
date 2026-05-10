@@ -2,11 +2,8 @@ package com.bank.credit_bank.application.payment.mapper;
 
 import com.bank.credit_bank.application.payment.dto.request.PaymentRequestDto;
 import com.bank.credit_bank.application.payment.dto.response.PaymentResponseDto;
-import com.bank.credit_bank.domain.base.enums.CurrencyEnum;
-import com.bank.credit_bank.domain.card.model.enums.CategoryPaymentEnum;
 import com.bank.credit_bank.domain.payment.model.dto.CreatePaymentRequestDto;
 import com.bank.credit_bank.domain.payment.model.entities.Payment;
-import com.bank.credit_bank.domain.payment.model.enums.ChannelPaymentEnum;
 import com.bank.credit_bank.domain.payment.model.factory.PaymentFactory;
 
 public class MapperApplicationPaymentImpl implements MapperApplicationPayment {

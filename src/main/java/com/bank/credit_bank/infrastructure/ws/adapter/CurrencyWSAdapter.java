@@ -7,12 +7,13 @@ import com.bank.credit_bank.infrastructure.ws.repository.CurrencyJsonServerWSRep
 
 import java.util.Optional;
 
-public class CurrencyWSWSAdapter implements LoadCurrencyWSPort {
+public class CurrencyWSAdapter implements LoadCurrencyWSPort {
 
     private final CurrencyJsonServerWSRepository currencyJsonServerWSRepository;
     private final MapperCurrency mapperCurrency;
 
-    public CurrencyWSWSAdapter(CurrencyJsonServerWSRepository currencyJsonServerWSRepository, MapperCurrency mapperCurrency) {
+    public CurrencyWSAdapter(CurrencyJsonServerWSRepository currencyJsonServerWSRepository,
+                             MapperCurrency mapperCurrency) {
         this.currencyJsonServerWSRepository = currencyJsonServerWSRepository;
         this.mapperCurrency = mapperCurrency;
     }

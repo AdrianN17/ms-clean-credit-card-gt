@@ -6,6 +6,7 @@ import com.bank.credit_bank.infrastructure.presenter.rest.schema.request.Initiat
 import com.bank.credit_bank.infrastructure.presenter.rest.schema.request.InitiateConsumptionRequest;
 import com.bank.credit_bank.infrastructure.presenter.rest.schema.request.InitiatePaymentRequest;
 import com.bank.credit_bank.infrastructure.presenter.rest.schema.response.*;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
+@Profile("new")
 public class CardManagementApiImpl implements CardManagementApi {
 
     private final CardManagementDelegate cardManagementDelegate;

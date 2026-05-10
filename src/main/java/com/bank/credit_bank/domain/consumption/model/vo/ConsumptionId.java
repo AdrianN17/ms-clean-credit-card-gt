@@ -4,7 +4,7 @@ import com.bank.credit_bank.domain.consumption.model.exceptions.ConsumptionIdExc
 
 import java.util.UUID;
 
-import static com.bank.credit_bank.domain.consumption.model.Constants.ConsumptionIdErrorMessage.CONSUMPTION_ID_CANNOT_BE_NULL;
+import static com.bank.credit_bank.domain.consumption.model.constants.ConsumptionIdErrorMessage.CONSUMPTION_ID_CANNOT_BE_NULL;
 import static com.bank.credit_bank.domain.util.Validation.isNotNull;
 
 public class ConsumptionId {
