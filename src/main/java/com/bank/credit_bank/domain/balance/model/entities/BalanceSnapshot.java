@@ -177,6 +177,7 @@ public class BalanceSnapshot extends AggregateRoot<BalanceId> implements Balance
             isNotNull(dateRange, new BalanceException(DATE_RANGE_CANNOT_BE_NULL));
 
             if (this.status == null) this.status = ACTIVE;
+            if (this.updatedDate != null) this.updatedDate = LocalDateTime.now();
             if (this.createdDate == null) this.createdDate = LocalDateTime.now();
 
             if (this.old == null) this.old = this.total;

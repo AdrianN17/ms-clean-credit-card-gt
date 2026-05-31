@@ -179,6 +179,8 @@ public class Card extends AggregateRoot<CardId> {
             isNotNull(paymentDay, new CardException(PAYMENT_DAY_CANNOT_BE_NULL));
             isNotNull(credit, new CardException(CREDIT_CANNOT_BE_NULL));
 
+            if (this.updatedDate != null) this.updatedDate = LocalDateTime.now();
+            if (this.createdDate == null) this.createdDate = LocalDateTime.now();
             if (this.cardStatus == null) this.cardStatus = OPERATIVE;
             if (this.status == null) this.status = ACTIVE;
 

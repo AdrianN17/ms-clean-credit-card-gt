@@ -5,5 +5,5 @@ import com.bank.credit_bank.infrastructure.ws.dto.CurrencyDto;
 
 @FunctionalInterface
 public interface MapperCurrency {
-    CurrencyResponseDto toDomain(CurrencyDto currencyDto);
+    CurrencyResponseDto toDomain(CurrencyDto currencyDto, String currency);
 }

@@ -21,6 +21,6 @@ public class CurrencyWSAdapter implements LoadCurrencyWSPort {
     @Override
     public Optional<CurrencyResponseDto> load(String currency) {
         return Optional.of(currencyJsonServerWSRepository.findByCurrency(currency))
-                .map(mapperCurrency::toDomain);
+                .map(c -> mapperCurrency.toDomain(c, currency));
     }
 }

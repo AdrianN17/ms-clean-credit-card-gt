@@ -165,6 +165,7 @@ public class Consumption extends AggregateRoot<ConsumptionId> {
             if (this.id == null)
                 this.id = ConsumptionId.create(UUID.randomUUID());
             if (this.status == null) this.status = ACTIVE;
+            if (this.updatedDate != null) this.updatedDate = LocalDateTime.now();
             if (this.createdDate == null) this.createdDate = LocalDateTime.now();
             if (this.consumptionApprobation == null)
                 this.consumptionApprobation = Approbation.create(LocalDateTime.now());

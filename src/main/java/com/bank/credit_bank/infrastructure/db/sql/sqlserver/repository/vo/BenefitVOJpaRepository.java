@@ -3,12 +3,14 @@ package com.bank.credit_bank.infrastructure.db.sql.sqlserver.repository.vo;
 import com.bank.credit_bank.domain.base.enums.StatusEnum;
 import com.bank.credit_bank.infrastructure.db.generic.repository.GenericJpaRepository;
 import com.bank.credit_bank.infrastructure.db.sql.sqlserver.entity.vo.BenefitEntityVO;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
 public interface BenefitVOJpaRepository extends GenericJpaRepository<BenefitEntityVO, Long> {
+    @Query("SELECT b FROM BenefitEntityVO b WHERE b.card.cardId = :cardId")
     Optional<BenefitEntityVO> findByCardId(Long cardId);
 
     default Optional<BenefitEntityVO> findActiveByCardId(Long cardId) {

@@ -6,9 +6,9 @@ import com.bank.credit_bank.infrastructure.ws.dto.CurrencyDto;
 public class MapperCurrencyImpl implements MapperCurrency {
 
     @Override
-    public CurrencyResponseDto toDomain(CurrencyDto currencyDto) {
+    public CurrencyResponseDto toDomain(CurrencyDto currencyDto, String currency) {
         return new CurrencyResponseDto(
-                currencyDto.currency(),
+                currency,
                 currencyDto.value()
         );
     }
