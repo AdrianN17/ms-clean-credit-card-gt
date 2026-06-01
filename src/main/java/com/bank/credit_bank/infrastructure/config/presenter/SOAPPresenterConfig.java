@@ -48,17 +48,17 @@ public class SOAPPresenterConfig {
                 paymentApiMapperRequestCommand);
     }
 
-    @Bean
+    @Bean("cardApiMapperRequestCommandSoap")
     public CardApiMapperRequestCommand cardApiMapperRequestCommand() {
         return new CardApiMapperRequestCommandImpl();
     }
 
-    @Bean
+    @Bean("consumptionApiMapperRequestCommandSoap")
     public ConsumptionApiMapperRequestCommand consumptionApiMapperRequestCommand() {
         return new ConsumptionApiMapperRequestCommandImpl();
     }
 
-    @Bean
+    @Bean("paymentApiMapperRequestCommandSoap")
     public PaymentApiMapperRequestCommand paymentApiMapperRequestCommand() {
         return new PaymentApiMapperRequestCommandImpl();
     }

@@ -41,6 +41,8 @@ public class BusinessServiceCardImpl implements BusinessServiceCard {
         var cardCurrencyValue = cardDBFindCurrencyPort.load(cardId)
                 .orElseThrow(() -> new ApplicationCardException(CARD_NOT_FOUND));
 
+        System.out.println("hasta aqui2");
+
         var cardCurrencyDto = loadCurrencyWSPort.load(cardCurrencyValue)
                 .orElseThrow(() -> new ApplicationCardException(CARD_CURRENCY_NOT_FOUND));
 

@@ -8,7 +8,9 @@ import com.bank.credit_bank.infrastructure.db.nosql.mongo.mapper.query.PaymentQu
 import com.bank.credit_bank.infrastructure.db.nosql.mongo.repository.PaymentMongoRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
+@Profile("old")
 @Configuration
 public class PaymentMongoConfig {
 

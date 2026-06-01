@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
@@ -23,6 +24,7 @@ public class BenefitEntityVO extends GenericEntity {
     @Column(name = "idBenefit", nullable = false)
     private Long idBenefit;
 
+    @ToString.Exclude
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cardId", nullable = false)
     private CardEntityVO card;

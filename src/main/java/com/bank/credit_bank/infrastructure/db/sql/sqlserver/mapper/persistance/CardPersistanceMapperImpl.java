@@ -30,13 +30,13 @@ public class CardPersistanceMapperImpl implements CardPersistanceMapper {
                 cardEntity.getStatus().getValue(),
                 cardEntity.getCreatedDate(),
                 cardEntity.getUpdatedDate(),
-                cardEntity.getTypeCard().name(),
-                cardEntity.getCategoryCard().name(),
-                cardEntity.getCardAccount().getCurrency().name(),
+                cardEntity.getTypeCard().getCode(),
+                cardEntity.getCategoryCard().getCode(),
+                cardEntity.getCardAccount().getCurrency().getCode(),
                 currency.exchangeRate(),
                 cardEntity.getCardAccount().getCreditTotal(),
                 cardEntity.getCardAccount().getDebtTax(),
-                cardEntity.getCardAccount().getCardStatus().name(),
+                cardEntity.getCardAccount().getCardStatus().getCode(),
                 cardEntity.getCardAccount().getCardAccountId(),
                 cardEntity.getCardAccount().getPaymentDate()
         );

@@ -8,7 +8,9 @@ import com.bank.credit_bank.infrastructure.db.nosql.cosmos.mapper.query.Consumpt
 import com.bank.credit_bank.infrastructure.db.nosql.cosmos.repository.ConsumptionCosmosRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
+@Profile("new")
 @Configuration
 public class ConsumptionCosmosConfig {
 

@@ -16,7 +16,7 @@ public class ConsumptionPersistanceMapperMongoImpl implements ConsumptionPersist
                 entity.getStatus().getValue(),
                 entity.getCreatedDate(),
                 entity.getUpdatedDate(),
-                entity.getCurrency().name(),
+                entity.getCurrency().getCode(),
                 currency.exchangeRate(),
                 entity.getAmount(),
                 entity.getConsumptionDate(),

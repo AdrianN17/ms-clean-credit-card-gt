@@ -18,14 +18,14 @@ public class PaymentPersistanceMapperCosmosImpl implements PaymentPersistanceMap
                 entity.getStatus().getValue(),
                 entity.getCreatedDate(),
                 entity.getUpdatedDate(),
-                entity.getCurrency().name(),
+                entity.getCurrency().getCode(),
                 currency.exchangeRate(),
                 entity.getAmount(),
                 entity.getPaymentDate(),
                 entity.getPaymentApprobationDate(),
-                entity.getCategory().name(),
+                entity.getCategory().getCode(),
                 Long.parseLong(entity.getCardId()),
-                entity.getChannel().name()
+                entity.getChannel().getCode()
         );
     }
 

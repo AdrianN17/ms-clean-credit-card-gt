@@ -48,17 +48,17 @@ public class RestPresenterConfig {
                 paymentApiMapperRequestCommand);
     }
 
-    @Bean
+    @Bean("cardApiMapperRequestCommandRest")
     CardApiMapperRequestCommand cardApiMapperRequestCommand() {
         return new CardApiMapperRequestCommandImpl();
     }
 
-    @Bean
+    @Bean("consumptionApiMapperRequestCommandRest")
     ConsumptionApiMapperRequestCommand consumptionApiMapperRequestCommand() {
         return new ConsumptionApiMapperRequestCommandImpl();
     }
 
-    @Bean
+    @Bean("paymentApiMapperRequestCommandRest")
     PaymentApiMapperRequestCommand paymentApiMapperRequestCommand() {
         return new PaymentApiMapperRequestCommandImpl();
     }

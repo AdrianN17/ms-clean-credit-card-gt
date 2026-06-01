@@ -37,7 +37,7 @@ public class DateRange {
 
     public static DateRange create(LocalDate startDate, LocalDate endDate) {
         isNotConditional(startDate.isAfter(endDate), new DateRangeException(START_DATE_AFTER_END_DATE));
-        isNotConditional((startDate.isBefore(now()) || endDate.isBefore(now())), new DateRangeException(END_DATE_BEFORE_START_DATE));
+        isNotConditional((startDate.isBefore(now()) && endDate.isBefore(now())), new DateRangeException(END_DATE_BEFORE_START_DATE));
 
         return new DateRange(startDate, endDate);
     }

@@ -8,7 +8,9 @@ import com.bank.credit_bank.infrastructure.db.nosql.mongo.mapper.query.Consumpti
 import com.bank.credit_bank.infrastructure.db.nosql.mongo.repository.ConsumptionMongoRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
+@Profile("old")
 @Configuration
 public class ConsumptionMongoConfig {
 

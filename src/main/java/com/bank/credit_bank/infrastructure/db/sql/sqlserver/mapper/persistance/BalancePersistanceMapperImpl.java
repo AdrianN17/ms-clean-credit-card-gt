@@ -18,7 +18,7 @@ public class BalancePersistanceMapperImpl implements BalancePersistanceMapper {
                 balanceEntity.getCreatedDate(),
                 balanceEntity.getUpdatedDate(),
                 balanceEntity.getCard().getCardId(),
-                balanceEntity.getCurrency().name(),
+                balanceEntity.getCurrency().getCode(),
                 currency.exchangeRate(),
                 balanceEntity.getTotalAmount(),
                 balanceEntity.getOldAmount(),
