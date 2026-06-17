@@ -1,0 +1,1365 @@
+@startuml figura
+' ================================================================
+' C4 Level 4 - Code Diagram
+' Proyecto : ms-clean-credit-card-gt
+' Arquitectura: Clean Architecture + Hexagonal (Ports & Adapters)
+' Perfiles Spring Boot:
+'   "old" → Inbound SOAP  + Outbound MongoDB
+'   "new" → Inbound REST  + Outbound Cosmos DB
+' ================================================================
+
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 60
+skinparam classFontSize 10
+skinparam classAttributeFontSize 9
+skinparam packageFontSize 11
+skinparam packageFontStyle bold
+
+skinparam class {
+    BackgroundColor White
+    BorderColor #555555
+    ArrowColor #333333
+}
+skinparam package {
+    BorderColor #888888
+    BackgroundColor #FAFAFA
+}
+
+' ─── Estereotipos por color ───────────────────────────────────────
+skinparam class {
+    BackgroundColor<<aggregate>>    #C8E6C9
+    BackgroundColor<<entity>>       #BBDEFB
+    BackgroundColor<<valueObject>>  #FFF9C4
+    BackgroundColor<<domainSvc>>    #DCEDC8
+    BackgroundColor<<factory>>      #F0F4C3
+    BackgroundColor<<useCase>>      #FCE4EC
+    BackgroundColor<<appService>>   #F8BBD0
+    BackgroundColor<<bizService>>   #F3E5F5
+    BackgroundColor<<portIn>>       #E8EAF6
+    BackgroundColor<<portOut>>      #E0F7FA
+    BackgroundColor<<adapter>>      #FFF3E0
+    BackgroundColor<<controller>>   #EDE7F6
+    BackgroundColor<<delegate>>     #D1C4E9
+    BackgroundColor<<jpaRepo>>      #E8EAF6
+    BackgroundColor<<nosqlRepo>>    #B3E5FC
+    BackgroundColor<<externalRepo>> #FFE0B2
+    BackgroundColor<<mapper>>       #F5F5F5
+    BackgroundColor<<config>>       #ECEFF1
+    BackgroundColor<<aspect>>       #FFCCBC
+    BackgroundColor<<exception>>    #FFCDD2
+    BackgroundColor<<command>>      #FFF8E1
+    BackgroundColor<<query>>        #E1F5FE
+}
+
+' ================================================================
+' ZONA 1 - INFRASTRUCTURE: INBOUND ADAPTERS (Presenter)
+' ================================================================
+
+package "infrastructure.presenter" #FAFAFA {
+
+    package "soap  [Profile: old]" #EDE7F6 {
+
+        class CreditCardControllerSOAPImpl <<controller>> {
+            <<@WebService serviceName="CreditCardService">>
+            <<@Component @Profile("old")>>
+            ─────────────────────────────
+            -creditCardDelegateSOAP: CreditCardDelegateSOAP
+            ─────────────────────────────
+            +retrieveBalance(RetrieveBalanceRequest): RetrieveBalanceResponse
+            +initiateCard(InitiateCardRequest): InitiateCardResponse
+            +controlCard(ControlCardRequest): ControlCardResponse
+            +initiatePayment(InitiatePaymentRequest): InitiatePaymentResponse
+            +controlPayment(ControlPaymentRequest): ControlPaymentResponse
+            +initiateConsumption(InitiateConsumptionRequest): InitiateConsumptionResponse
+            +exchangeConsumption(ExchangeConsumptionRequest): ExchangeConsumptionResponse
+            +controlConsumption(ControlConsumptionRequest): ControlConsumptionResponse
+            +retrieveConsumption(RetrieveConsumptionRequest): RetrieveConsumptionResponse
+            +retrievePayment(RetrievePaymentRequest): RetrievePaymentResponse
+        }
+
+        interface CreditCardControllerSOAP <<portIn>> {
+            <<@WebService targetNamespace="http://bank.com/credit_card">>
+            +retrieveBalance(RetrieveBalanceRequest)
+            +initiateCard(InitiateCardRequest)
+            +controlCard(ControlCardRequest)
+            +initiatePayment(InitiatePaymentRequest)
+            +controlPayment(ControlPaymentRequest)
+            +initiateConsumption(InitiateConsumptionRequest)
+            +exchangeConsumption(ExchangeConsumptionRequest)
+            +controlConsumption(ControlConsumptionRequest)
+            +retrieveConsumption(RetrieveConsumptionRequest)
+            +retrievePayment(RetrievePaymentRequest)
+        }
+
+        class CreditCardDelegateSOAPImpl <<delegate>> {
+            -cardCreateService: CardCreateService
+            -cardCloseService: CardCloseService
+            -cardFindByIdService: CardFindByIdService
+            -paymentProcessService: PaymentProcessService
+            -paymentCancelService: PaymentCancelService
+            -paymentFindByDatesAndCardIdService: PaymentFindByDatesAndCardIdService
+            -consumptionProcessService: ConsumptionProcessService
+            -consumptionCancelService: ConsumptionCancelService
+            -consumptionSplitService: ConsumptionSplitService
+            -consumptionFindByDatesAndCardIdService: ConsumptionFindByDatesAndCardIdService
+            -cardApiMapperRequestCommand: CardApiMapperRequestCommand
+            -consumptionApiMapperRequestCommand: ConsumptionApiMapperRequestCommand
+            -paymentApiMapperRequestCommand: PaymentApiMapperRequestCommand
+        }
+
+        interface CreditCardDelegateSOAP <<portIn>> {
+            +retrieveBalance(RetrieveBalanceRequest): RetrieveBalanceResponse
+            +initiateCard(InitiateCardRequest): InitiateCardResponse
+            +controlCard(ControlCardRequest): ControlCardResponse
+            +initiatePayment(InitiatePaymentRequest): InitiatePaymentResponse
+            +controlPayment(ControlPaymentRequest): ControlPaymentResponse
+            +initiateConsumption(InitiateConsumptionRequest): InitiateConsumptionResponse
+            +exchangeConsumption(ExchangeConsumptionRequest): ExchangeConsumptionResponse
+            +controlConsumption(ControlConsumptionRequest): ControlConsumptionResponse
+            +retrieveConsumption(RetrieveConsumptionRequest): RetrieveConsumptionResponse
+            +retrievePayment(RetrievePaymentRequest): RetrievePaymentResponse
+        }
+
+        package "soap.mapper" #FAFAFA {
+            interface CardApiMapperRequestCommand_SOAP <<mapper>> {
+                <<soap>>
+                +toCommand(InitiateCardRequest): CardCreateCommand
+                +toCommandId(ControlCardRequest): CardCloseCommand
+                +toResponse(LoadCardBalanceBenefitView): CardResponse
+            }
+            class CardApiMapperRequestCommandImpl_SOAP <<mapper>> {
+                <<soap>>
+            }
+            interface ConsumptionApiMapperRequestCommand_SOAP <<mapper>> {
+                <<soap>>
+                +toCommand(InitiateConsumptionRequest): CardProcessConsumptionCommand
+                +toCommandId(ControlConsumptionRequest): ConsumptionCancelCommand
+                +toCommandIdR(ExchangeConsumptionRequest): ConsumptionSplitCommand
+                +toResponse(LoadConsumptionView): ConsumptionResponseList
+            }
+            class ConsumptionApiMapperRequestCommandImpl_SOAP <<mapper>> {
+                <<soap>>
+            }
+            interface PaymentApiMapperRequestCommand_SOAP <<mapper>> {
+                <<soap>>
+                +toCommand(InitiatePaymentRequest): CardProcessPaymentCommand
+                +toCommandId(ControlPaymentRequest): PaymentCancelCommand
+                +toResponse(LoadPaymentView): PaymentResponseList
+            }
+            class PaymentApiMapperRequestCommandImpl_SOAP <<mapper>> {
+                <<soap>>
+            }
+        }
+
+        package "soap.schema.request" #FAFAFA {
+            class InitiateCardRequest_SOAP <<command>>
+            class ControlCardRequest_SOAP  <<command>>
+            class RetrieveBalanceRequest_SOAP <<query>>
+            class InitiatePaymentRequest_SOAP <<command>>
+            class ControlPaymentRequest_SOAP <<command>>
+            class InitiateConsumptionRequest_SOAP <<command>>
+            class ExchangeConsumptionRequest_SOAP <<command>>
+            class ControlConsumptionRequest_SOAP <<command>>
+            class RetrieveConsumptionRequest_SOAP <<query>>
+            class RetrievePaymentRequest_SOAP <<query>>
+        }
+
+        package "soap.schema.response" #FAFAFA {
+            class RetrieveBalanceResponse_SOAP <<entity>> {
+                -data: CardResponse
+                -tracking: Tracking
+            }
+            class InitiateCardResponse_SOAP <<entity>> {
+                -data: LongResponse
+                -tracking: Tracking
+            }
+            class InitiatePaymentResponse_SOAP <<entity>>
+            class InitiateConsumptionResponse_SOAP <<entity>>
+            class ExchangeConsumptionResponse_SOAP <<entity>>
+            class ControlCardResponse_SOAP <<entity>>
+            class ControlPaymentResponse_SOAP <<entity>>
+            class ControlConsumptionResponse_SOAP <<entity>>
+            class RetrieveConsumptionResponse_SOAP <<entity>>
+            class RetrievePaymentResponse_SOAP <<entity>>
+        }
+    }
+
+    package "rest  [Profile: new]" #F3E5F5 {
+
+        class CardManagementApiImpl <<controller>> {
+            <<@RestController @Profile("new")>>
+            ─────────────────────────────
+            -cardManagementDelegate: CardManagementDelegate
+            ─────────────────────────────
+            +retrieveBalance(cardId: Long): ResponseEntity
+            +initiateCard(InitiateCardRequest, BindingResult): ResponseEntity
+            +controlCard(cardId: Long): ResponseEntity
+            +initiatePayment(cardId: Long, InitiatePaymentRequest): ResponseEntity
+            +controlPayment(cardId: Long, paymentId: UUID): ResponseEntity
+            +initiateConsumption(cardId: Long, InitiateConsumptionRequest): ResponseEntity
+            +exchangeConsumption(cardId: Long, consumptionId: UUID, ...): ResponseEntity
+            +controlConsumption(cardId: Long, consumptionId: UUID): ResponseEntity
+            +retrieveConsumption(cardId: Long, dateStart: LocalDate, dateEnd: LocalDate): ResponseEntity
+            +retrievePayment(cardId: Long, dateStart: LocalDate, dateEnd: LocalDate): ResponseEntity
+        }
+
+        interface CardManagementApi <<portIn>> {
+            <<OpenAPI Generated Interface>>
+        }
+
+        class CardManagementDelegateImpl <<delegate>> {
+            -cardCreateService: CardCreateService
+            -cardCloseService: CardCloseService
+            -cardFindByIdService: CardFindByIdService
+            -paymentProcessService: PaymentProcessService
+            -paymentCancelService: PaymentCancelService
+            -paymentFindByDatesAndCardIdService: PaymentFindByDatesAndCardIdService
+            -consumptionProcessService: ConsumptionProcessService
+            -consumptionCancelService: ConsumptionCancelService
+            -consumptionSplitService: ConsumptionSplitService
+            -consumptionFindByDatesAndCardIdService: ConsumptionFindByDatesAndCardIdService
+            -cardApiMapperRequestCommand: CardApiMapperRequestCommand
+            -consumptionApiMapperRequestCommand: ConsumptionApiMapperRequestCommand
+            -paymentApiMapperRequestCommand: PaymentApiMapperRequestCommand
+        }
+
+        interface CardManagementDelegate <<portIn>> {
+            +retrieveBalance(cardId: Long): ResponseEntity<RetrieveBalance200Response>
+            +initiateCard(InitiateCardRequest, BindingResult): ResponseEntity<Long202Response>
+            +controlCard(cardId: Long): ResponseEntity<Long202Response>
+            +initiatePayment(cardId: Long, InitiatePaymentRequest, BindingResult): ResponseEntity<UUID202Response>
+            +controlPayment(cardId: Long, paymentId: UUID, BindingResult): ResponseEntity<UUID202Response>
+            +initiateConsumption(cardId: Long, InitiateConsumptionRequest, BindingResult): ResponseEntity<UUID202Response>
+            +exchangeConsumption(cardId: Long, consumptionId: UUID, ExchangeConsumptionRequest, BindingResult): ResponseEntity<UUIDList202Response>
+            +controlConsumption(cardId: Long, consumptionId: UUID): ResponseEntity<UUID202Response>
+            +retrieveConsumption(cardId: Long, dateStart: LocalDate, dateEnd: LocalDate): ResponseEntity<RetrieveConsumption200Response>
+            +retrievePayment(cardId: Long, dateStart: LocalDate, dateEnd: LocalDate): ResponseEntity<RetrievePayment200Response>
+        }
+
+        package "rest.mapper" #FAFAFA {
+            interface CardApiMapperRequestCommand_REST <<mapper>> {
+                <<rest>>
+                +toCommand(card data): CardCreateCommand
+                +toCommandId(cardId: Long): CardCloseCommand
+                +toResponse(view): RetrieveBalance200Response_data
+            }
+            class CardApiMapperRequestCommandImpl_REST <<mapper>>
+            interface ConsumptionApiMapperRequestCommand_REST <<mapper>> {
+                <<rest>>
+            }
+            class ConsumptionApiMapperRequestCommandImpl_REST <<mapper>>
+            interface PaymentApiMapperRequestCommand_REST <<mapper>> {
+                <<rest>>
+            }
+            class PaymentApiMapperRequestCommandImpl_REST <<mapper>>
+        }
+
+        package "rest.schema" #FAFAFA {
+            class InitiateCardRequest_REST <<command>>
+            class InitiatePaymentRequest_REST <<command>>
+            class InitiateConsumptionRequest_REST <<command>>
+            class ExchangeConsumptionRequest_REST <<command>>
+            class Long202Response <<entity>>
+            class UUID202Response <<entity>>
+            class UUIDList202Response <<entity>>
+            class RetrieveBalance200Response <<entity>>
+            class RetrieveConsumption200Response <<entity>>
+            class RetrievePayment200Response <<entity>>
+        }
+    }
+}
+
+' ================================================================
+' ZONA 2 - APPLICATION LAYER
+' ================================================================
+
+package "application" #FFF8E1 {
+
+    ' ── CARD ─────────────────────────────────────────────────────
+    package "application.card" #FCE4EC {
+
+        package "card.port.in  (Input Ports)" #E8EAF6 {
+            interface CardCreateUseCase <<useCase>> {
+                +execute(CardCreateCommand): CardId
+            }
+            interface CardCloseUseCase <<useCase>> {
+                +execute(CardCloseCommand): CardId
+            }
+            interface CardFindByIdQuery <<useCase>> {
+                +execute(cardId: Long): LoadCardBalanceBenefitView
+            }
+        }
+
+        package "card.service  (Use Case Implementations)" #F8BBD0 {
+            class CardCreateService <<appService>> {
+                -businessServiceCard: BusinessServiceCard
+                -businessServiceBalance: BusinessServiceBalance
+                -businessServiceBenefit: BusinessServiceBenefit
+                -idGeneratePort: IdGeneratePort
+                -loadCurrencyWSPort: LoadCurrencyWSPort
+                -balanceFactory: BalanceFactory
+                ─────────────────────────────
+                +execute(CardCreateCommand): CardId
+            }
+            class CardCloseService <<appService>> {
+                -businessServiceCard: BusinessServiceCard
+                -businessServiceBalance: BusinessServiceBalance
+                -businessServiceBenefit: BusinessServiceBenefit
+                ─────────────────────────────
+                +execute(CardCloseCommand): CardId
+            }
+            class CardFindByIdService <<appService>> {
+                -cardBalanceBenefitFindByIdPort: CardBalanceBenefitFindByIdPort
+                ─────────────────────────────
+                +execute(cardId: Long): LoadCardBalanceBenefitView
+            }
+        }
+
+        package "card.port.out  (Output Ports)" #E0F7FA {
+            interface CardDBSavePort <<portOut>> {
+                +save(CardRequestDto): Optional<CardId>
+            }
+            interface CardFindByIdPort <<portOut>> {
+                +load(cardId: Long, currency: CurrencyRequestDto): Optional<CardResponseDto>
+            }
+            interface CardDBFindCurrencyPort <<portOut>> {
+                +load(cardId: Long): Optional<String>
+            }
+            interface CardBalanceBenefitFindByIdPort <<portOut>> {
+                +loadAll(cardId: Long): Optional<LoadCardBalanceBenefitView>
+            }
+        }
+
+        package "card.business  (Internal Orchestrators)" #F3E5F5 {
+            interface BusinessServiceCard <<bizService>> {
+                +get(cardId: Long): Card
+                +save(card: Card): CardId
+            }
+            class BusinessServiceCardImpl <<bizService>> {
+                -cardFindByIdPort: CardFindByIdPort
+                -cardDBFindCurrencyPort: CardDBFindCurrencyPort
+                -mapperApplicationCard: MapperApplicationCard
+                -mapperApplicationCurrency: MapperApplicationCurrency
+                -loadCurrencyWSPort: LoadCurrencyWSPort
+                -cardDBSavePort: CardDBSavePort
+            }
+        }
+
+        package "card.commands" #FFF8E1 {
+            class CardCreateCommand <<command>> {
+                +typeCard(): String
+                +categoryCard(): String
+                +creditTotal(): BigDecimal
+                +debtTax(): BigDecimal
+                +currency(): String
+                +paymentDay(): Short
+                +hasDiscount(): Boolean
+                +multiplierPoints(): BigDecimal
+            }
+            class CardCloseCommand <<command>> {
+                +cardId(): Long
+            }
+        }
+    }
+
+    ' ── CONSUMPTION ──────────────────────────────────────────────
+    package "application.consumption" #FCE4EC {
+
+        package "consumption.port.in" #E8EAF6 {
+            interface ConsumptionProcessUseCase <<useCase>> {
+                +execute(CardProcessConsumptionCommand): ConsumptionId
+            }
+            interface ConsumptionCancelUseCase <<useCase>> {
+                +execute(ConsumptionCancelCommand): ConsumptionId
+            }
+            interface ConsumptionSplitUseCase <<useCase>> {
+                +execute(ConsumptionSplitCommand): List<ConsumptionId>
+            }
+            interface ConsumptionFindByDatesAndCardIdQuery <<useCase>> {
+                +execute(FindConsumptionByDatesAndCardIdCriteria): List<LoadConsumptionView>
+            }
+        }
+
+        package "consumption.service" #F8BBD0 {
+            class ConsumptionProcessService <<appService>> {
+                -businessServiceCard: BusinessServiceCard
+                -businessServiceBalance: BusinessServiceBalance
+                -businessServiceBenefit: BusinessServiceBenefit
+                -businessServiceConsumption: BusinessServiceConsumption
+                -mapperApplicationCurrency: MapperApplicationCurrency
+                -loadCurrencyWSPort: LoadCurrencyWSPort
+                ─────────────────────────────
+                +execute(CardProcessConsumptionCommand): ConsumptionId
+            }
+            class ConsumptionCancelService <<appService>> {
+                +execute(ConsumptionCancelCommand): ConsumptionId
+            }
+            class ConsumptionSplitService <<appService>> {
+                +execute(ConsumptionSplitCommand): List<ConsumptionId>
+            }
+            class ConsumptionFindByDatesAndCardIdService <<appService>> {
+                +execute(FindConsumptionByDatesAndCardIdCriteria): List<LoadConsumptionView>
+            }
+        }
+
+        package "consumption.port.out" #E0F7FA {
+            interface ConsumptionDBSavePort <<portOut>> {
+                +save(ConsumptionRequestDto): Optional<ConsumptionId>
+            }
+            interface ConsumptionFindByIdPort <<portOut>> {
+                +load(consumptionId: UUID, cardId: String, currency: CurrencyRequestDto): Optional<ConsumptionResponseDto>
+            }
+            interface ConsumptionDBFindCurrencyPort <<portOut>> {
+                +load(consumptionId: UUID, cardId: String): Optional<String>
+            }
+            interface ConsumptionsDBFindByDatesAndCardIdPort <<portOut>> {
+                +load(FindConsumptionByDatesAndCardIdCriteria): List<LoadConsumptionView>
+            }
+        }
+
+        package "consumption.business" #F3E5F5 {
+            interface BusinessServiceConsumption <<bizService>> {
+                +get(consumptionId: UUID, cardId: Long): Consumption
+                +save(consumption: Consumption): ConsumptionId
+            }
+            class BusinessServiceConsumptionImpl <<bizService>>
+        }
+
+        package "consumption.queries" #E1F5FE {
+            class FindConsumptionByDatesAndCardIdCriteria <<query>> {
+                +start(): LocalDate
+                +end(): LocalDate
+                +cardId(): Long
+            }
+        }
+    }
+
+    ' ── PAYMENT ──────────────────────────────────────────────────
+    package "application.payment" #FCE4EC {
+
+        package "payment.port.in" #E8EAF6 {
+            interface PaymentProcessUseCase <<useCase>> {
+                +execute(CardProcessPaymentCommand): PaymentId
+            }
+            interface PaymentCancelUseCase <<useCase>> {
+                +execute(PaymentCancelCommand): PaymentId
+            }
+            interface PaymentFindByDatesAndCardIdQuery <<useCase>> {
+                +execute(FindPaymentByDatesAndCardIdCriteria): List<LoadPaymentView>
+            }
+        }
+
+        package "payment.service" #F8BBD0 {
+            class PaymentProcessService <<appService>> {
+                -businessServiceCard: BusinessServiceCard
+                -businessServiceBalance: BusinessServiceBalance
+                -businessServiceBenefit: BusinessServiceBenefit
+                -businessServicePayment: BusinessServicePayment
+                -mapperApplicationCurrency: MapperApplicationCurrency
+                -loadCurrencyWSPort: LoadCurrencyWSPort
+                -paymentFactory: PaymentFactory
+                ─────────────────────────────
+                +execute(CardProcessPaymentCommand): PaymentId
+            }
+            class PaymentCancelService <<appService>> {
+                +execute(PaymentCancelCommand): PaymentId
+            }
+            class PaymentFindByDatesAndCardIdService <<appService>> {
+                +execute(FindPaymentByDatesAndCardIdCriteria): List<LoadPaymentView>
+            }
+        }
+
+        package "payment.port.out" #E0F7FA {
+            interface PaymentDBSavePort <<portOut>> {
+                +save(PaymentRequestDto): Optional<PaymentId>
+            }
+            interface PaymentFindByIdPort <<portOut>> {
+                +load(paymentId: UUID, cardId: String, currency: CurrencyRequestDto): Optional<PaymentResponseDto>
+            }
+            interface PaymentDBFindCurrencyPort <<portOut>> {
+                +load(paymentId: UUID, cardId: String): Optional<String>
+            }
+            interface PaymentsFindByDatesAndCardIdPort <<portOut>> {
+                +load(FindPaymentByDatesAndCardIdCriteria): List<LoadPaymentView>
+            }
+        }
+
+        package "payment.business" #F3E5F5 {
+            interface BusinessServicePayment <<bizService>> {
+                +get(paymentId: UUID, cardId: Long): Payment
+                +save(payment: Payment): PaymentId
+            }
+            class BusinessServicePaymentImpl <<bizService>>
+        }
+
+        package "payment.queries" #E1F5FE {
+            class FindPaymentByDatesAndCardIdCriteria <<query>> {
+                +start(): LocalDate
+                +end(): LocalDate
+                +cardId(): Long
+            }
+        }
+    }
+
+    ' ── BALANCE BUSINESS ─────────────────────────────────────────
+    package "application.balance" #FCE4EC {
+        package "balance.port.out" #E0F7FA {
+            interface BalanceDBSavePort <<portOut>> {
+                +save(balance): Optional<BalanceId>
+            }
+            interface BalanceDBFindByIdPort <<portOut>> {
+                +load(cardId: Long): Optional<Balance>
+            }
+        }
+        package "balance.business" #F3E5F5 {
+            interface BusinessServiceBalance <<bizService>> {
+                +get(cardId: Long): Balance
+                +save(balance: Balance): BalanceId
+            }
+            class BusinessServiceBalanceImpl <<bizService>>
+        }
+    }
+
+    ' ── BENEFIT BUSINESS ─────────────────────────────────────────
+    package "application.benefit" #FCE4EC {
+        package "benefit.port.out" #E0F7FA {
+            interface BenefitDBSavePort <<portOut>> {
+                +save(benefit): Optional<BenefitId>
+            }
+            interface BenefitDBFindByIdPort <<portOut>> {
+                +load(cardId: Long): Optional<Benefit>
+            }
+        }
+        package "benefit.business" #F3E5F5 {
+            interface BusinessServiceBenefit <<bizService>> {
+                +get(cardId: Long): Benefit
+                +save(benefit: Benefit): BenefitId
+            }
+            class BusinessServiceBenefitImpl <<bizService>>
+        }
+    }
+
+    ' ── CURRENCY PORT ────────────────────────────────────────────
+    package "application.currency" #FCE4EC {
+        package "currency.port.out" #E0F7FA {
+            interface LoadCurrencyWSPort <<portOut>> {
+                +load(currency: String): Optional<CurrencyResponseDto>
+            }
+        }
+    }
+
+    ' ── GENERATOR PORT ───────────────────────────────────────────
+    package "application.generator" #FCE4EC {
+        package "generator.port.out" #E0F7FA {
+            interface IdGeneratePort <<portOut>> {
+                +load(): Optional<Long>
+            }
+        }
+    }
+}
+
+' ================================================================
+' ZONA 3 - DOMAIN LAYER
+' ================================================================
+
+package "domain" #E8F5E9 {
+
+    package "domain.generic" #DCEDC8 {
+        abstract class AggregateRoot <<aggregate>> {
+            #id: T
+            #status: StatusEnum
+            #createdDate: LocalDateTime
+            #updatedDate: LocalDateTime
+            ─────────────────────────────
+            +softDelete(): void
+            +getId(): T
+            +getStatus(): StatusEnum
+        }
+        abstract class GenericDomain <<entity>> {
+            <<Base Value Object>>
+        }
+        class EntityException <<exception>>
+    }
+
+    package "domain.card" #C8E6C9 {
+
+        class Card <<aggregate>> {
+            <<extends AggregateRoot<CardId>>>
+            ─────────────────────────────
+            -typeCard: TypeCardEnum
+            -categoryCard: CategoryCardEnum
+            -credit: Credit
+            -cardStatus: CardStatusEnum
+            -cardAccountId: CardAccountId
+            -paymentDay: PaymentDay
+            ─────────────────────────────
+            +updateStatus(isOvercharged: Boolean): void
+            +validateIfCardIfInDebt(): void
+            +getRatio(): BigDecimal
+            +close(): void
+        }
+
+        package "card.value objects" #F0F4C3 {
+            class CardId <<valueObject>> {
+                -value: Long
+                +{static} create(value: Long): CardId
+                +getValue(): Long
+            }
+            class CardAccountId <<valueObject>> {
+                -value: Long
+                +{static} create(value: Long): CardAccountId
+            }
+            class Credit <<valueObject>> {
+                -amount: Amount
+                -debtTax: BigDecimal
+                +{static} create(amount: Amount, debtTax: BigDecimal): Credit
+            }
+            class PaymentDay <<valueObject>> {
+                -value: Short
+                +{static} create(value: Short): PaymentDay
+            }
+        }
+
+        class CardException <<exception>>
+    }
+
+    package "domain.balance" #C8E6C9 {
+
+        interface Balance <<entity>> {
+            +getCardId(): CardId
+            +getTotal(): Amount
+            +getAvailable(): Amount
+            +getOld(): Amount
+            +getDateRange(): DateRange
+            +getStatus(): StatusEnum
+            +getId(): BalanceId
+            +close(): void
+        }
+
+        class BalanceOperable <<entity>> {
+            <<implements Balance>>
+            -cardId: CardId
+            -total: Amount
+            -available: Amount
+            -old: Amount
+            -dateRange: DateRange
+            ─────────────────────────────
+            +isOvercharged(): boolean
+        }
+
+        class BalanceConsumo <<entity>> {
+            <<extends BalanceOperable>>
+            ─────────────────────────────
+            +{static} from(balance: Balance): BalanceConsumo
+            +apply(consumptionAmount: Amount): void
+        }
+
+        class BalancePago <<entity>> {
+            <<extends BalanceOperable>>
+            ─────────────────────────────
+            +{static} from(balance: Balance): BalancePago
+            +apply(paymentAmount: Amount): void
+            +validateIfPaymentIsPossible(...): void
+        }
+
+        class BalanceSnapshot <<entity>> {
+            <<Immutable snapshot>>
+        }
+
+        package "balance.factory" #F0F4C3 {
+            interface BalanceFactory <<factory>> {
+                +create(CreateBalanceRequestFirstDto): Balance
+            }
+            class BalanceFactoryImpl <<factory>> {
+                +create(CreateBalanceRequestFirstDto): Balance
+            }
+        }
+
+        class BalanceId <<valueObject>> {
+            -value: Long
+        }
+    }
+
+    package "domain.consumption" #C8E6C9 {
+        class Consumption <<aggregate>> {
+            -consumptionId: ConsumptionId
+            -cardId: Long
+            -consumptionAmount: Amount
+            -sellerName: String
+            ─────────────────────────────
+            +{static} builder(): ConsumptionBuilder
+        }
+        class ConsumptionId <<valueObject>> {
+            -value: UUID
+        }
+    }
+
+    package "domain.payment" #C8E6C9 {
+        interface Payment <<entity>> {
+            +validateIfPaymentIsPossible(...): void
+            +getPaymentId(): PaymentId
+            +getCardId(): Long
+            +getPaymentAmount(): Amount
+        }
+        class NormalPayment <<entity>> {
+            <<implements Payment>>
+        }
+        class MinimunPayment <<entity>> {
+            <<implements Payment>>
+        }
+        class Prepayment <<entity>> {
+            <<implements Payment>>
+        }
+        class TotalPayment <<entity>> {
+            <<implements Payment>>
+        }
+
+        package "payment.factory" #F0F4C3 {
+            interface PaymentFactory <<factory>> {
+                +create(CreatePaymentRequestFirstDto): Payment
+            }
+            class PaymentFactoryImpl <<factory>> {
+                +create(CreatePaymentRequestFirstDto): Payment
+            }
+        }
+
+        class PaymentId <<valueObject>> {
+            -value: UUID
+        }
+    }
+
+    package "domain.benefit" #C8E6C9 {
+        class Benefit <<aggregate>> {
+            <<extends AggregateRoot<BenefitId>>>
+            ─────────────────────────────
+            -cardId: Long
+            -hasDiscount: Boolean
+            -totalPoints: Point
+            -multiplierPoints: BigDecimal
+            ─────────────────────────────
+            +accumulate(amount: Amount, ratio: BigDecimal): void
+            +discount(amount: Amount, point: Point): Amount
+            +discountPolicy(hasDiscount: Boolean, multiplierPoints: BigDecimal)
+            +close(): void
+        }
+    }
+
+    package "domain.base" #C8E6C9 {
+        package "base.value objects" #F0F4C3 {
+            class Amount <<valueObject>> {
+                -currency: Currency
+                -amount: BigDecimal
+                +{static} create(currency: Currency, amount: BigDecimal): Amount
+                +convertTo(targetCurrency: CurrencyEnum): BigDecimal
+            }
+            class Currency <<valueObject>> {
+                -currency: CurrencyEnum
+                -exchangeRate: BigDecimal
+                +{static} create(currency: CurrencyEnum, exchangeRate: BigDecimal): Currency
+            }
+            class DateRange <<valueObject>> {
+                -startDate: LocalDate
+                -endDate: LocalDate
+            }
+        }
+    }
+}
+
+' ================================================================
+' ZONA 4 - INFRASTRUCTURE: OUTBOUND ADAPTERS
+' ================================================================
+
+package "infrastructure.outbound" #FFF3E0 {
+
+    ' ── SQL SERVER / JPA ─────────────────────────────────────────
+    package "db.sql.sqlserver" #FFF3E0 {
+
+        package "sqlserver.adapters" #FFECB3 {
+            class CardJpaRepositoryAdapter <<adapter>> {
+                <<implements CardDBSavePort, CardFindByIdPort>>
+                <<implements CardDBFindCurrencyPort, CardBalanceBenefitFindByIdPort>>
+                ─────────────────────────────
+                -cardJpaRepository: CardJpaRepository
+                -cardVOJpaRepository: CardVOJpaRepository
+                -cardPersistanceMapper: CardPersistanceMapper
+                -cardAccountJpaRepository: CardAccountJpaRepository
+                -cardAccountPersistanceMapper: CardAccountPersistanceMapper
+                -cardQueryMapper: CardQueryMapper
+            }
+            class BalanceJpaRepositoryAdapter <<adapter>> {
+                <<implements BalanceDBSavePort, BalanceDBFindByIdPort>>
+                ─────────────────────────────
+                -balanceJpaRepository: BalanceJpaRepository
+                -balanceVOJpaRepository: BalanceVOJpaRepository
+            }
+            class BenefitJpaRepositoryAdapter <<adapter>> {
+                <<implements BenefitDBSavePort, BenefitDBFindByIdPort>>
+                ─────────────────────────────
+                -benefitJpaRepository: BenefitJpaRepository
+                -benefitVOJpaRepository: BenefitVOJpaRepository
+            }
+        }
+
+        package "sqlserver.repositories" #E8EAF6 {
+            interface CardJpaRepository <<jpaRepo>> {
+                <<extends JpaRepository<CardEntity, Long>>>
+                +save(CardEntity): CardEntity
+            }
+            interface CardAccountJpaRepository <<jpaRepo>> {
+                <<extends JpaRepository<CardAccountEntity, Long>>>
+            }
+            interface BalanceJpaRepository <<jpaRepo>> {
+                <<extends JpaRepository<BalanceEntity, Long>>>
+            }
+            interface BenefitJpaRepository <<jpaRepo>> {
+                <<extends JpaRepository<BenefitEntity, Long>>>
+            }
+            interface CardVOJpaRepository <<jpaRepo>> {
+                <<extends JpaRepository<CardEntityVO, Long>>>
+                +findActiveById(cardId: Long): Optional<CardEntityVO>
+                +getCardAllProjectionByCardId(cardId: Long): Optional<CardSumaryProjection>
+                +getCardCurrencyProjectionByCardId(cardId: Long): Optional<CardCurrencyProjection>
+            }
+            interface BalanceVOJpaRepository <<jpaRepo>> {
+                <<extends JpaRepository<BalanceEntityVO, Long>>>
+            }
+            interface BenefitVOJpaRepository <<jpaRepo>> {
+                <<extends JpaRepository<BenefitEntityVO, Long>>>
+            }
+            interface CardAccountVOJpaRepository <<jpaRepo>> {
+                <<extends JpaRepository<CardAccountEntityVO, Long>>>
+            }
+        }
+
+        package "sqlserver.entities" #BBDEFB {
+            class CardEntity <<entity>> {
+                <<@Entity @Table("Cards")>>
+                -cardId: Long
+                -typeCard: TypeCardEnum
+                -categoryCard: CategoryCardEnum
+            }
+            class CardAccountEntity <<entity>> {
+                <<@Entity @Table("CardAccounts")>>
+                -cardAccountId: Long
+                -cardId: Long
+                -creditTotal: BigDecimal
+                -debtTax: BigDecimal
+                -currency: CurrencyEnum
+                -paymentDate: Short
+                -cardStatus: CardStatusEnum
+            }
+            class BalanceEntity <<entity>> {
+                <<@Entity @Table("balances")>>
+                -idBalance: Long
+                -cardId: Long
+                -totalAmount: BigDecimal
+                -availableAmount: BigDecimal
+                -oldAmount: BigDecimal
+            }
+            class BenefitEntity <<entity>> {
+                <<@Entity @Table("Benefits")>>
+                -idBenefit: Long
+                -cardId: Long
+                -hasDiscount: Boolean
+                -totalPoints: Integer
+                -multiplierPoints: BigDecimal
+            }
+            class CardEntityVO <<entity>> {
+                <<@Entity @Table("Cards") - JOIN view>>
+                <<@OneToOne balance, cardAccount, benefit>>
+                -cardId: Long
+            }
+            class CardAccountEntityVO <<entity>> {
+                <<@Entity @Table("CardAccounts")>>
+            }
+            class BalanceEntityVO <<entity>> {
+                <<@Entity @Table("balances")>>
+            }
+            class BenefitEntityVO <<entity>> {
+                <<@Entity @Table("Benefits")>>
+            }
+        }
+    }
+
+    ' ── MONGODB [Profile: old] ────────────────────────────────────
+    package "db.nosql.mongo  [Profile: old]" #E1F5FE {
+
+        package "mongo.adapters" #B3E5FC {
+            class ConsumptionMongoRepositoryAdapter <<adapter>> {
+                <<implements ConsumptionDBSavePort, ConsumptionFindByIdPort>>
+                <<implements ConsumptionDBFindCurrencyPort, ConsumptionsDBFindByDatesAndCardIdPort>>
+                ─────────────────────────────
+                -consumptionMongoRepository: ConsumptionMongoRepository
+                -consumptionPersistanceMapperMongo: ConsumptionPersistanceMapperMongo
+                -consumptionQueryMapperMongo: ConsumptionQueryMapperMongo
+            }
+            class PaymentMongoRepositoryAdapter <<adapter>> {
+                <<implements PaymentDBSavePort, PaymentFindByIdPort>>
+                <<implements PaymentDBFindCurrencyPort, PaymentsFindByDatesAndCardIdPort>>
+                ─────────────────────────────
+                -paymentMongoRepository: PaymentMongoRepository
+            }
+        }
+
+        package "mongo.repositories" #E8EAF6 {
+            interface ConsumptionMongoRepository <<nosqlRepo>> {
+                <<extends MongoRepository<ConsumptionEntityMongo, UUID>>>
+                +findByCardIdAndConsumptionDateBetween(...): List<ConsumptionEntityMongo>
+                +findActiveById(consumptionId: UUID, cardId: String): Optional<ConsumptionEntityMongo>
+            }
+            interface PaymentMongoRepository <<nosqlRepo>> {
+                <<extends MongoRepository<PaymentEntityMongo, UUID>>>
+                +findByCardIdAndPaymentDateBetween(...): List<PaymentEntityMongo>
+                +findActiveById(paymentId: UUID, cardId: String): Optional<PaymentEntityMongo>
+            }
+        }
+
+        package "mongo.entities" #BBDEFB {
+            class ConsumptionEntityMongo <<entity>> {
+                <<@Document("consumptions")>>
+                -consumptionId: UUID
+                -cardId: String
+                -amount: BigDecimal
+                -currency: CurrencyEnum
+                -sellerName: String
+                -consumptionDate: LocalDateTime
+            }
+            class PaymentEntityMongo <<entity>> {
+                <<@Document("payments")>>
+                -paymentId: UUID
+                -cardId: String
+                -amount: BigDecimal
+                -currency: CurrencyEnum
+                -paymentDate: LocalDateTime
+            }
+        }
+    }
+
+    ' ── COSMOS DB [Profile: new] ──────────────────────────────────
+    package "db.nosql.cosmos  [Profile: new]" #E8F5E9 {
+
+        package "cosmos.adapters" #A5D6A7 {
+            class ConsumptionCosmosRepositoryAdapter <<adapter>> {
+                <<implements ConsumptionDBSavePort, ConsumptionFindByIdPort>>
+                <<implements ConsumptionDBFindCurrencyPort, ConsumptionsDBFindByDatesAndCardIdPort>>
+                ─────────────────────────────
+                -consumptionCosmosRepository: ConsumptionCosmosRepository
+                -consumptionPersistanceMapperCosmos: ConsumptionPersistanceMapperCosmos
+                -consumptionQueryMapperCosmos: ConsumptionQueryMapperCosmos
+            }
+            class PaymentCosmosRepositoryAdapter <<adapter>> {
+                <<implements PaymentDBSavePort, PaymentFindByIdPort>>
+                <<implements PaymentDBFindCurrencyPort, PaymentsFindByDatesAndCardIdPort>>
+                ─────────────────────────────
+                -paymentCosmosRepository: PaymentCosmosRepository
+            }
+        }
+
+        package "cosmos.repositories" #E8EAF6 {
+            interface ConsumptionCosmosRepository <<nosqlRepo>> {
+                <<extends CosmosRepository<ConsumptionEntityCosmos, UUID>>>
+                +findByCardIdAndConsumptionDateBetween(...): List<ConsumptionEntityCosmos>
+                +findActiveById(consumptionId: UUID, cardId: String): Optional<ConsumptionEntityCosmos>
+            }
+            interface PaymentCosmosRepository <<nosqlRepo>> {
+                <<extends CosmosRepository<PaymentEntityCosmos, UUID>>>
+            }
+        }
+
+        package "cosmos.entities" #BBDEFB {
+            class ConsumptionEntityCosmos <<entity>> {
+                <<@Container("consumptions") Azure Cosmos>>
+                -consumptionId: UUID
+                -cardId: String
+                -currency: CurrencyEnum
+            }
+            class PaymentEntityCosmos <<entity>> {
+                <<@Container("payments") Azure Cosmos>>
+                -paymentId: UUID
+                -cardId: String
+            }
+        }
+    }
+
+    ' ── EXTERNAL WS ADAPTER ──────────────────────────────────────
+    package "ws  (External REST Client)" #FFE0B2 {
+        class CurrencyWSAdapter <<adapter>> {
+            <<implements LoadCurrencyWSPort>>
+            ─────────────────────────────
+            -currencyJsonServerWSRepository: CurrencyJsonServerWSRepository
+            -mapperCurrency: MapperCurrency
+            ─────────────────────────────
+            +load(currency: String): Optional<CurrencyResponseDto>
+        }
+        class CurrencyJsonServerWSRepository <<externalRepo>> {
+            <<RestClient - http://localhost:3001/convert/currency/>>
+            ─────────────────────────────
+            -restClient: RestClient
+            ─────────────────────────────
+            +findByCurrency(currency: String): CurrencyWsDto
+        }
+    }
+
+    ' ── SNOWFLAKE GENERATOR ───────────────────────────────────────
+    package "infrastructure.generator" #FFE0B2 {
+        class SnowflakeGenerator <<adapter>> {
+            <<implements IdGeneratePort>>
+            ─────────────────────────────
+            -machineId: long = 1
+            -sequence: long
+            -lastTimestamp: long
+            ─────────────────────────────
+            -nextId(): Long
+            +load(): Optional<Long>
+        }
+    }
+}
+
+' ================================================================
+' ZONA 5 - INFRASTRUCTURE: CROSS-CUTTING
+' ================================================================
+
+package "infrastructure.crosscutting" #ECEFF1 {
+
+    package "aop" #FFCCBC {
+        annotation TransactionalUseCase <<aspect>> {
+            <<Custom Annotation>>
+            <<Marks transactional boundaries>>
+        }
+        class TransactionalUseCaseAspect <<aspect>> {
+            <<@Aspect @Around("@annotation(TransactionalUseCase)")>>
+            ─────────────────────────────
+            +aroundTransactionalUseCase(ProceedingJoinPoint): Object
+        }
+    }
+
+    package "exception" #FFCDD2 {
+        class GlobalControllAdvice <<exception>> {
+            <<@RestControllerAdvice>>
+            ─────────────────────────────
+            +handleGenericException(Exception, WebRequest): ResponseEntity
+        }
+    }
+
+    package "config" #ECEFF1 {
+        class CxfWebServiceConfig <<config>> {
+            <<@Configuration @Profile("old")>>
+            ─────────────────────────────
+            +creditCardServiceEndpoint(Bus, CreditCardControllerSOAPImpl): Endpoint
+        }
+        class SOAPPresenterConfig <<config>> {
+            <<@Configuration>>
+            ─────────────────────────────
+            +creditCardDelegateSOAP(...): CreditCardDelegateSOAP
+            +cardApiMapperRequestCommandSoap(): CardApiMapperRequestCommand
+            +consumptionApiMapperRequestCommandSoap(): ConsumptionApiMapperRequestCommand
+            +paymentApiMapperRequestCommandSoap(): PaymentApiMapperRequestCommand
+        }
+        class RestPresenterConfig <<config>> {
+            <<@Configuration>>
+            ─────────────────────────────
+            +cardManagementDelegate(...): CardManagementDelegate
+        }
+        class RestClientConfig <<config>> {
+            <<@Configuration>>
+            ─────────────────────────────
+            +restClient(): RestClient
+        }
+        class CurrencyWSAdapterConfig <<config>> {
+            <<@Configuration>>
+            ─────────────────────────────
+            +currencyWSAdapter(...): CurrencyWSAdapter
+            +mapperCurrency(): MapperCurrency
+            +currencyJsonServerWSRepository(...): CurrencyJsonServerWSRepository
+        }
+    }
+}
+
+' ================================================================
+' RELACIONES - CAPA PRESENTACIÓN (INBOUND)
+' ================================================================
+
+' SOAP flow
+CreditCardControllerSOAPImpl ..|> CreditCardControllerSOAP : implements
+CreditCardControllerSOAPImpl --> CreditCardDelegateSOAP : delegates to
+CreditCardDelegateSOAPImpl ..|> CreditCardDelegateSOAP : implements
+CreditCardDelegateSOAPImpl --> CardCreateService : calls
+CreditCardDelegateSOAPImpl --> CardCloseService : calls
+CreditCardDelegateSOAPImpl --> CardFindByIdService : calls
+CreditCardDelegateSOAPImpl --> PaymentProcessService : calls
+CreditCardDelegateSOAPImpl --> PaymentCancelService : calls
+CreditCardDelegateSOAPImpl --> PaymentFindByDatesAndCardIdService : calls
+CreditCardDelegateSOAPImpl --> ConsumptionProcessService : calls
+CreditCardDelegateSOAPImpl --> ConsumptionCancelService : calls
+CreditCardDelegateSOAPImpl --> ConsumptionSplitService : calls
+CreditCardDelegateSOAPImpl --> ConsumptionFindByDatesAndCardIdService : calls
+CreditCardDelegateSOAPImpl --> CardApiMapperRequestCommand_SOAP : uses
+CreditCardDelegateSOAPImpl --> ConsumptionApiMapperRequestCommand_SOAP : uses
+CreditCardDelegateSOAPImpl --> PaymentApiMapperRequestCommand_SOAP : uses
+CardApiMapperRequestCommandImpl_SOAP ..|> CardApiMapperRequestCommand_SOAP
+ConsumptionApiMapperRequestCommandImpl_SOAP ..|> ConsumptionApiMapperRequestCommand_SOAP
+PaymentApiMapperRequestCommandImpl_SOAP ..|> PaymentApiMapperRequestCommand_SOAP
+
+' REST flow
+CardManagementApiImpl ..|> CardManagementApi : implements
+CardManagementApiImpl --> CardManagementDelegate : delegates to
+CardManagementDelegateImpl ..|> CardManagementDelegate : implements
+CardManagementDelegateImpl --> CardCreateService : calls
+CardManagementDelegateImpl --> CardCloseService : calls
+CardManagementDelegateImpl --> CardFindByIdService : calls
+CardManagementDelegateImpl --> PaymentProcessService : calls
+CardManagementDelegateImpl --> PaymentCancelService : calls
+CardManagementDelegateImpl --> PaymentFindByDatesAndCardIdService : calls
+CardManagementDelegateImpl --> ConsumptionProcessService : calls
+CardManagementDelegateImpl --> ConsumptionCancelService : calls
+CardManagementDelegateImpl --> ConsumptionSplitService : calls
+CardManagementDelegateImpl --> ConsumptionFindByDatesAndCardIdService : calls
+CardManagementDelegateImpl --> CardApiMapperRequestCommand_REST : uses
+CardManagementDelegateImpl --> ConsumptionApiMapperRequestCommand_REST : uses
+CardManagementDelegateImpl --> PaymentApiMapperRequestCommand_REST : uses
+CardApiMapperRequestCommandImpl_REST ..|> CardApiMapperRequestCommand_REST
+ConsumptionApiMapperRequestCommandImpl_REST ..|> ConsumptionApiMapperRequestCommand_REST
+PaymentApiMapperRequestCommandImpl_REST ..|> PaymentApiMapperRequestCommand_REST
+
+' Config wiring
+CxfWebServiceConfig ..> CreditCardControllerSOAPImpl : publishes endpoint
+SOAPPresenterConfig ..> CreditCardDelegateSOAPImpl : creates bean
+RestPresenterConfig ..> CardManagementDelegateImpl : creates bean
+
+' ================================================================
+' RELACIONES - CAPA APPLICATION (USE CASES → PORTS OUT)
+' ================================================================
+
+' Card Services implement Input Ports
+CardCreateService ..|> CardCreateUseCase : implements
+CardCloseService ..|> CardCloseUseCase : implements
+CardFindByIdService ..|> CardFindByIdQuery : implements
+
+' Card Services use BusinessServices and Ports
+CardCreateService --> BusinessServiceCard : uses
+CardCreateService --> BusinessServiceBalance : uses
+CardCreateService --> BusinessServiceBenefit : uses
+CardCreateService --> IdGeneratePort : uses
+CardCreateService --> LoadCurrencyWSPort : uses
+CardCreateService --> BalanceFactory : uses
+
+CardCloseService --> BusinessServiceCard : uses
+CardCloseService --> BusinessServiceBalance : uses
+CardCloseService --> BusinessServiceBenefit : uses
+
+CardFindByIdService --> CardBalanceBenefitFindByIdPort : uses
+
+' BusinessServiceCardImpl implements BusinessServiceCard
+BusinessServiceCardImpl ..|> BusinessServiceCard : implements
+BusinessServiceCardImpl --> CardFindByIdPort : uses
+BusinessServiceCardImpl --> CardDBFindCurrencyPort : uses
+BusinessServiceCardImpl --> CardDBSavePort : uses
+BusinessServiceCardImpl --> LoadCurrencyWSPort : uses
+
+' Consumption Services implement Input Ports
+ConsumptionProcessService ..|> ConsumptionProcessUseCase : implements
+ConsumptionCancelService ..|> ConsumptionCancelUseCase : implements
+ConsumptionSplitService ..|> ConsumptionSplitUseCase : implements
+ConsumptionFindByDatesAndCardIdService ..|> ConsumptionFindByDatesAndCardIdQuery : implements
+
+ConsumptionProcessService --> BusinessServiceCard : uses
+ConsumptionProcessService --> BusinessServiceBalance : uses
+ConsumptionProcessService --> BusinessServiceBenefit : uses
+ConsumptionProcessService --> BusinessServiceConsumption : uses
+ConsumptionProcessService --> LoadCurrencyWSPort : uses
+
+BusinessServiceConsumptionImpl ..|> BusinessServiceConsumption : implements
+BusinessServiceConsumptionImpl --> ConsumptionDBSavePort : uses
+BusinessServiceConsumptionImpl --> ConsumptionFindByIdPort : uses
+BusinessServiceConsumptionImpl --> ConsumptionDBFindCurrencyPort : uses
+
+' Payment Services implement Input Ports
+PaymentProcessService ..|> PaymentProcessUseCase : implements
+PaymentCancelService ..|> PaymentCancelUseCase : implements
+PaymentFindByDatesAndCardIdService ..|> PaymentFindByDatesAndCardIdQuery : implements
+
+PaymentProcessService --> BusinessServiceCard : uses
+PaymentProcessService --> BusinessServiceBalance : uses
+PaymentProcessService --> BusinessServiceBenefit : uses
+PaymentProcessService --> BusinessServicePayment : uses
+PaymentProcessService --> LoadCurrencyWSPort : uses
+PaymentProcessService --> PaymentFactory : uses
+
+BusinessServicePaymentImpl ..|> BusinessServicePayment : implements
+BusinessServicePaymentImpl --> PaymentDBSavePort : uses
+BusinessServicePaymentImpl --> PaymentFindByIdPort : uses
+BusinessServicePaymentImpl --> PaymentDBFindCurrencyPort : uses
+
+' Balance
+BusinessServiceBalanceImpl ..|> BusinessServiceBalance : implements
+BusinessServiceBalanceImpl --> BalanceDBSavePort : uses
+BusinessServiceBalanceImpl --> BalanceDBFindByIdPort : uses
+
+' Benefit
+BusinessServiceBenefitImpl ..|> BusinessServiceBenefit : implements
+BusinessServiceBenefitImpl --> BenefitDBSavePort : uses
+BusinessServiceBenefitImpl --> BenefitDBFindByIdPort : uses
+
+' ================================================================
+' RELACIONES - DOMAIN (uso desde application)
+' ================================================================
+
+Card --|> AggregateRoot : extends
+Benefit --|> AggregateRoot : extends
+Card --> CardId : identity
+Card --> CardAccountId : has
+Card --> Credit : has
+Card --> PaymentDay : has
+Card --> CardException : throws
+
+BalanceConsumo --|> BalanceOperable : extends
+BalancePago --|> BalanceOperable : extends
+BalanceOperable ..|> Balance : implements
+BalanceSnapshot ..|> Balance : implements
+BalanceFactoryImpl ..|> BalanceFactory : implements
+
+NormalPayment ..|> Payment : implements
+MinimunPayment ..|> Payment : implements
+Prepayment ..|> Payment : implements
+TotalPayment ..|> Payment : implements
+PaymentFactoryImpl ..|> PaymentFactory : implements
+
+Amount --> Currency : contains
+Currency --> Amount
+
+CardCreateService --> Card : creates
+CardCreateService --> Consumption : n/a
+ConsumptionProcessService --> Consumption : creates
+ConsumptionProcessService --> BalanceConsumo : uses
+PaymentProcessService --> BalancePago : uses
+PaymentProcessService --> PaymentFactory : uses
+
+' ================================================================
+' RELACIONES - OUTBOUND ADAPTERS → PORTS OUT
+' ================================================================
+
+' JPA Adapters implement Output Ports
+CardJpaRepositoryAdapter ..|> CardDBSavePort : implements
+CardJpaRepositoryAdapter ..|> CardFindByIdPort : implements
+CardJpaRepositoryAdapter ..|> CardDBFindCurrencyPort : implements
+CardJpaRepositoryAdapter ..|> CardBalanceBenefitFindByIdPort : implements
+CardJpaRepositoryAdapter --> CardJpaRepository : uses
+CardJpaRepositoryAdapter --> CardVOJpaRepository : uses
+CardJpaRepositoryAdapter --> CardAccountJpaRepository : uses
+
+BalanceJpaRepositoryAdapter ..|> BalanceDBSavePort : implements
+BalanceJpaRepositoryAdapter ..|> BalanceDBFindByIdPort : implements
+BalanceJpaRepositoryAdapter --> BalanceJpaRepository : uses
+BalanceJpaRepositoryAdapter --> BalanceVOJpaRepository : uses
+
+BenefitJpaRepositoryAdapter ..|> BenefitDBSavePort : implements
+BenefitJpaRepositoryAdapter ..|> BenefitDBFindByIdPort : implements
+BenefitJpaRepositoryAdapter --> BenefitJpaRepository : uses
+BenefitJpaRepositoryAdapter --> BenefitVOJpaRepository : uses
+
+' JPA Repos use JPA Entities
+CardJpaRepository --> CardEntity : manages
+CardAccountJpaRepository --> CardAccountEntity : manages
+BalanceJpaRepository --> BalanceEntity : manages
+BenefitJpaRepository --> BenefitEntity : manages
+CardVOJpaRepository --> CardEntityVO : manages
+BalanceVOJpaRepository --> BalanceEntityVO : manages
+BenefitVOJpaRepository --> BenefitEntityVO : manages
+CardAccountVOJpaRepository --> CardAccountEntityVO : manages
+
+' CardEntityVO has @OneToOne relationships
+CardEntityVO "1" *-- "1" CardAccountEntityVO : @OneToOne (mappedBy card)
+CardEntityVO "1" *-- "1" BalanceEntityVO : @OneToOne (mappedBy card)
+CardEntityVO "1" *-- "1" BenefitEntityVO : @OneToOne (mappedBy card)
+
+' MongoDB Adapters [Profile: old]
+ConsumptionMongoRepositoryAdapter ..|> ConsumptionDBSavePort : implements
+ConsumptionMongoRepositoryAdapter ..|> ConsumptionFindByIdPort : implements
+ConsumptionMongoRepositoryAdapter ..|> ConsumptionDBFindCurrencyPort : implements
+ConsumptionMongoRepositoryAdapter ..|> ConsumptionsDBFindByDatesAndCardIdPort : implements
+ConsumptionMongoRepositoryAdapter --> ConsumptionMongoRepository : uses
+ConsumptionMongoRepository --> ConsumptionEntityMongo : manages
+
+PaymentMongoRepositoryAdapter ..|> PaymentDBSavePort : implements
+PaymentMongoRepositoryAdapter ..|> PaymentFindByIdPort : implements
+PaymentMongoRepositoryAdapter ..|> PaymentDBFindCurrencyPort : implements
+PaymentMongoRepositoryAdapter ..|> PaymentsFindByDatesAndCardIdPort : implements
+PaymentMongoRepositoryAdapter --> PaymentMongoRepository : uses
+PaymentMongoRepository --> PaymentEntityMongo : manages
+
+' Cosmos Adapters [Profile: new]
+ConsumptionCosmosRepositoryAdapter ..|> ConsumptionDBSavePort : implements
+ConsumptionCosmosRepositoryAdapter ..|> ConsumptionFindByIdPort : implements
+ConsumptionCosmosRepositoryAdapter ..|> ConsumptionDBFindCurrencyPort : implements
+ConsumptionCosmosRepositoryAdapter ..|> ConsumptionsDBFindByDatesAndCardIdPort : implements
+ConsumptionCosmosRepositoryAdapter --> ConsumptionCosmosRepository : uses
+ConsumptionCosmosRepository --> ConsumptionEntityCosmos : manages
+
+PaymentCosmosRepositoryAdapter ..|> PaymentDBSavePort : implements
+PaymentCosmosRepositoryAdapter ..|> PaymentFindByIdPort : implements
+PaymentCosmosRepositoryAdapter ..|> PaymentDBFindCurrencyPort : implements
+PaymentCosmosRepositoryAdapter ..|> PaymentsFindByDatesAndCardIdPort : implements
+PaymentCosmosRepositoryAdapter --> PaymentCosmosRepository : uses
+PaymentCosmosRepository --> PaymentEntityCosmos : manages
+
+' External WS Adapter
+CurrencyWSAdapter ..|> LoadCurrencyWSPort : implements
+CurrencyWSAdapter --> CurrencyJsonServerWSRepository : calls
+
+' Generator Adapter
+SnowflakeGenerator ..|> IdGeneratePort : implements
+
+' Config wires adapters
+CurrencyWSAdapterConfig ..> CurrencyWSAdapter : creates bean
+CurrencyWSAdapterConfig ..> CurrencyJsonServerWSRepository : creates bean
+RestClientConfig ..> CurrencyJsonServerWSRepository : provides RestClient
+
+' AOP cross-cutting
+TransactionalUseCaseAspect --> TransactionalUseCase : intercepts @annotation
+
+' ================================================================
+' LEYENDA
+' ================================================================
+
+legend right
+  |= Color / Estereotipo |= Capa / Rol |
+  | <back:#C8E6C9>aggregate</back> | Aggregate Root (Domain) |
+  | <back:#BBDEFB>entity</back> | Entity / JPA Entity |
+  | <back:#FFF9C4>valueObject</back> | Value Object |
+  | <back:#F0F4C3>factory</back> | Factory |
+  | <back:#FCE4EC>useCase</back> | Input Port / Use Case |
+  | <back:#F8BBD0>appService</back> | Application Service (UC impl) |
+  | <back:#F3E5F5>bizService</back> | Business Service (orchestrator) |
+  | <back:#E8EAF6>portIn</back> | Input Port (interface) |
+  | <back:#E0F7FA>portOut</back> | Output Port (interface) |
+  | <back:#EDE7F6>controller</back> | Inbound Adapter Controller |
+  | <back:#D1C4E9>delegate</back> | Delegate (presenter logic) |
+  | <back:#FFF3E0>adapter</back> | Outbound Adapter |
+  | <back:#E8EAF6>jpaRepo</back> | JPA Repository (Spring Data) |
+  | <back:#B3E5FC>nosqlRepo</back> | NoSQL Repository |
+  | <back:#FFE0B2>externalRepo</back> | External REST Client |
+  | <back:#FFCCBC>aspect</back> | AOP / Cross-cutting |
+  | <back:#ECEFF1>config</back> | Spring Configuration |
+  | <back:#FFCDD2>exception</back> | Exception / Error Handling |
+endlegend
+
+note as N_PROFILES
+  <b>Spring Boot Profiles</b>
+  ─────────────────────
+  "old" → SOAP + MongoDB
+  "new" → REST + Cosmos DB
+  (ambos usan SQL Server para Card/Balance/Benefit)
+end note
+
+note as N_ARCH
+  <b>Arquitectura: Clean + Hexagonal</b>
+  ─────────────────────────────────────
+  Dependency Rule: Domain ← Application ← Infrastructure
+  Ports & Adapters: toda dependencia cruzas por interfaces
+  Snowflake: generador distribuido de IDs sin base de datos
+  CXF: servlet JAX-WS registrado en /ws/CreditCardService
+end note
+
+@enduml
+

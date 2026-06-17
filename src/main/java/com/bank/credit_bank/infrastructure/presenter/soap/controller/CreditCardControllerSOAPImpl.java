@@ -5,7 +5,9 @@ import com.bank.credit_bank.infrastructure.presenter.soap.schema.request.*;
 import com.bank.credit_bank.infrastructure.presenter.soap.schema.response.*;
 import jakarta.jws.WebService;
 import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
+@Component
 @WebService(serviceName = "CreditCardService",
         portName = "CreditCardPort",
         targetNamespace = "http://bank.com/credit_card",

@@ -30,3 +30,6 @@ spring:
 api:
   convert:
     url: http://localhost:3001/convert/currency/
+
+cxf:
+  path: /ws
